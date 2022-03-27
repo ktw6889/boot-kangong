@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kangong.schedule">
+	<select id="idGen" resultType="String">
+	   SELECT get_seq(#{tableName});
+	</select>
+
+	<select id="select" parameterType="com.kangong.calendar.model.ScheduleVO" resultType="com.kangong.calendar.model.ScheduleVO">
+       SELECT ID id, CREATE_DATE createDate, CREATE_USER createUser, UPDATE_DATE updateDate, UPDATE_USER updateUser, DELETE_YN deleteYn, CALENDAR_ID calendarId, CATEGORY category, TITLE title, START_DATE startDate, END_DATE endDate, COMMENTS comments
+       FROM ST_SCHEDULE S
+        <where>	        
+	        <if test="id != null and id !=''">
+	        	AND S.ID = #{id}
+	        </if>
+	        <if test="id == null and createUser != null ">
+	        	AND S.CREATE_USER = #{createUser}
+	        </if>
+		</where>
+    </select>
+
+     <insert id="insert" parameterType="com.kangong.calendar.model.ScheduleVO">
+         INSERT INTO ST_SCHEDULE 
+		   (ID, CREATE_DATE, CREATE_USER, UPDATE_DATE, UPDATE_USER, CALENDAR_ID, CATEGORY, TITLE, START_DATE, END_DATE, COMMENTS)  
+		 VALUES 
+		   ( #{id},now(), #{createUser}, now(), #{updateUser}, #{calendarId}, #{category}, #{title}, #{startDate}, #{endDate}, #{comments}) 
+    </insert>
+
+    <update id="update" parameterType="com.kangong.calendar.model.ScheduleVO">
+         UPDATE ST_SCHEDULE 
+		 SET UPDATE_DATE = now()
+		 , UPDATE_USER = #{updateUser}
+		 , CALENDAR_ID = #{calendarId}
+		 , CATEGORY = #{category}
+		 , TITLE = #{title}
+		 , START_DATE = #{startDate}
+		 , END_DATE = #{endDate}
+		 , COMMENTS = #{comments} 
+		 WHERE ID =#{id} 
+    </update>
+
+   <update id="delete" parameterType="com.kangong.calendar.model.ScheduleVO">
+        UPDATE ST_SCHEDULE
+		SET
+		   UPDATE_DATE = NOW()
+		  ,UPDATE_USER = #{updateUser}
+		  ,DELETE_YN = 'Y'
+		WHERE ID =#{id}
+    </update>
+
+</mapper>

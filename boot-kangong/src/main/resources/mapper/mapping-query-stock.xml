@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="seckim.stock">
+
+  
+
+    <update id="save" parameterType="com.kangong.stock.model.StockVO">
+        INSERT INTO ST_STOCK_MASTER 
+	   		(ID, CREATE_DATE, UPDATE_DATE, STOCK_ID, NAME, PRICE, PRICE_BEFOREDAY, FACE_VALUE, MARKET_CAPITALIZATION, STOCK_QTY, 
+	   		FOREIGNER_RATIO, VOLUMN, PER, ESTIMATION_PER, ROE, PBR, BPS, INDUSTRY_PER, INDUSTRY_BAISSE, INVESTMENT_OPINION, 
+	   		TARGET_PRICE, MAX_52, MIN_52, DIVIDEND_RATE,NATIONAL,EPS,ESTIMATION_EPS)  
+ 		VALUES 
+   			( get_seq('ST_STOCK_MASTER'), NOW(), NOW(), #{stockId}, #{name}, #{price}, #{priceBeforeday}, #{faceValue}, #{marketCapitalization}, 
+   			  #{stockQty}, #{foreignerRatio}, #{volumn}, #{per}, #{estimationPer}, #{roe}, #{pbr}, #{bps}, #{industryPer}, #{industryBaisse}, 
+   			  #{investmentOpinion}, #{targetPrice}, #{max52}, #{min52}, #{dividendRate}, #{national}, #{eps}, #{estimationEps}) 
+		ON DUPLICATE KEY UPDATE 
+			UPDATE_DATE = NOW(), STOCK_ID = #{stockId}, NAME = #{name}, PRICE = #{price}, PRICE_BEFOREDAY = #{priceBeforeday}, 
+			FACE_VALUE = #{faceValue}, MARKET_CAPITALIZATION = #{marketCapitalization}, STOCK_QTY = #{stockQty}, 
+			FOREIGNER_RATIO = #{foreignerRatio}, VOLUMN = #{volumn}, PER = #{per}, ESTIMATION_PER = #{estimationPer}, 
+			ROE = #{roe}, PBR = #{pbr}, BPS = #{bps}, INDUSTRY_PER = #{industryPer}, INDUSTRY_BAISSE = #{industryBaisse}, 
+			INVESTMENT_OPINION = #{investmentOpinion}, TARGET_PRICE = #{targetPrice}, 
+			MAX_52 = #{max52}, MIN_52 = #{min52}, DIVIDEND_RATE=#{dividendRate}, NATIONAL = #{national}, EPS = #{eps}, ESTIMATION_EPS = #{estimationEps}
+    </update>
+    
+       <update id="financailSave" parameterType="com.kangong.stock.model.StockVO">
+       INSERT INTO ST_STOCK_FINANCIAL 
+   		(ID, CREATE_DATE, UPDATE_DATE, TOTAL_SALES, PROFITS, EARNINGS, PROFITS_RATIO, NET_PROFIT_RATIO, ROE, DEPT_RATIO, RESERVE_RATIO, 
+   		EPS, PER, BPS, PBR, DIVIDENDS_PER_SHARE, DIVIDENDS_RATE, DIVIDENDS_TENDENCY, YEAR, STOCK_ID, STOCK_MASTER_ID, SHARES_OUTSTANDING, 
+   		TOTAL_ASSETS, TOTAL_DEPT, TOTAL_CAPITAL, CAPITAL)  
+  	   VALUES ( get_seq('ST_STOCK_FINANCIAL'), NOW(), NOW(), #{totalSales}, #{profits}, #{earnings}, #{profitsRatio}, #{netProfitRatio}, 
+  	   #{roe}, #{deptRatio}, #{reserveRatio}, #{eps}, #{per}, #{bps}, #{pbr}, #{dividendsPerShare}, #{dividendsRate}, #{dividendsTendency}, 
+  	   #{year}, #{stockId}, #{stockMasterId}, #{sharesOutstanding}, #{totalAssets}, #{totalDept}, #{totalCapital}, #{capital})  
+	 ON DUPLICATE KEY UPDATE 
+		UPDATE_DATE = NOW(), TOTAL_SALES = #{totalSales}, PROFITS = #{profits}, EARNINGS = #{earnings}, PROFITS_RATIO = #{profitsRatio}, 
+		NET_PROFIT_RATIO = #{netProfitRatio}, ROE = #{roe}, DEPT_RATIO = #{deptRatio}, RESERVE_RATIO = #{reserveRatio}, EPS = #{eps}, 
+		PER = #{per}, BPS = #{bps}, PBR = #{pbr}, DIVIDENDS_PER_SHARE = #{dividendsPerShare}, DIVIDENDS_RATE = #{dividendsRate}, 
+		DIVIDENDS_TENDENCY = #{dividendsTendency}, YEAR = #{year}, STOCK_ID = #{stockId}, STOCK_MASTER_ID = #{stockMasterId}, 
+		SHARES_OUTSTANDING = #{sharesOutstanding}, TOTAL_ASSETS = #{totalAssets}, TOTAL_DEPT = #{totalDept}, 
+		TOTAL_CAPITAL = #{totalCapital}, CAPITAL = #{capital}
+    </update>
+    
+    <update id="financailSave2" parameterType="com.kangong.stock.model.StockVO">
+       INSERT INTO ST_STOCK_FINANCIAL 
+   		(ID,UPDATE_DATE, YEAR, STOCK_ID, liquid_Asset,liquid_Dept,total_Stock_Qty,common_Stock_Qty,preferred_Stock_Qty)  
+  	   VALUES ( get_seq('ST_STOCK_FINANCIAL'),  NOW(), #{year}, #{stockId}, #{liquidAsset},#{liquidDept},#{totalStockQty},#{commonStockQty},#{preferredStockQty})  
+	 ON DUPLICATE KEY UPDATE 
+		UPDATE_DATE = NOW(),liquid_Asset = #{liquidAsset}, liquid_Dept = #{liquidDept},total_Stock_Qty = #{totalStockQty},
+		common_Stock_Qty = #{commonStockQty}, preferred_Stock_Qty=#{preferredStockQty}
+    </update>
+    
+    <select id="select" parameterType="com.kangong.stock.model.StockVO" resultType="com.kangong.stock.model.StockVO">
+        SELECT  
+			ID id, CREATE_DATE createDate, UPDATE_DATE updateDate, DELETE_YN deleteYn, STOCK_ID stockId, NAME name, 
+			PRICE price, PRICE_BEFOREDAY priceBeforeday, FACE_VALUE faceValue, MARKET_CAPITALIZATION marketCapitalization, 
+			STOCK_QTY stockQty, FOREIGNER_RATIO foreignerRatio, VOLUMN volumn, PER per, ESTIMATION_PER estimationPer, ROE roe, 
+			PBR pbr, BPS bps, INDUSTRY_PER industryPer, INDUSTRY_BAISSE industryBaisse, INVESTMENT_OPINION investmentOpinion, 
+			TARGET_PRICE targetPrice, MAX_52 max52, MIN_52 min52, DIVIDEND_RATE dividendRate, NATIONAL national
+ 		FROM ST_STOCK_MASTER M
+		<where>
+			AND M.DELETE_YN = 'N'
+	        <if test="id != null and id !=''">
+	        	AND M.ID = #{id}
+	        </if>
+	        <if test="stockId != null and stockId !=''">
+	        	AND M.STOCK_ID = #{stockId}
+	        </if>
+		</where>
+    </select>
+    
+     <select id="selectFinancial" parameterType="com.kangong.stock.model.StockFinancialVO" resultType="com.kangong.stock.model.StockFinancialVO">
+        SELECT  
+			ID id, CREATE_DATE createDate, UPDATE_DATE updateDate, DELETE_YN deleteYn, TOTAL_SALES totalSales, PROFITS profits, 
+			EARNINGS earnings, PROFITS_RATIO profitsRatio, NET_PROFIT_RATIO netProfitRatio, ROE roe, DEPT_RATIO deptRatio, 
+			RESERVE_RATIO reserveRatio, EPS eps, PER per, BPS bps, PBR pbr, DIVIDENDS_PER_SHARE dividendsPerShare, 
+			DIVIDENDS_RATE dividendsRate, DIVIDENDS_TENDENCY dividendsTendency, YEAR year, STOCK_ID stockId, 
+			STOCK_MASTER_ID stockMasterId, SHARES_OUTSTANDING sharesOutstanding, TOTAL_ASSETS totalAssets, TOTAL_DEPT totalDept, 
+			TOTAL_CAPITAL totalCapital, CAPITAL capital
+ 		FROM ST_STOCK_FINANCIAL F
+		<where>
+			AND F.DELETE_YN = 'N'
+	        <if test="year != null and year !=''">
+	        	AND F.YEAR = #{year}
+	        </if>
+	        <if test="stockId != null and stockId !=''">
+	        	AND F.STOCK_ID = #{stockId}
+	        </if>
+		</where>
+    </select>
+
+    
+    <update id="stockCategorySave" parameterType="com.kangong.stock.model.StockCategoryVO">
+       INSERT INTO ST_STOCK_CATEGORY 
+   		(ID, CATEGORY_TYPE, CATEGORY_NO, CATEGORY_NAME)  
+     VALUES ( get_seq('ST_STOCK_CATEGORY'), #{categoryType}, #{categoryNo}, #{categoryName}) 
+	 ON DUPLICATE KEY UPDATE 
+		CATEGORY_TYPE = #{categoryType}, CATEGORY_NAME = #{categoryName}
+    </update>
+    
+    <update id="stockCategoryLinkSave" parameterType="com.kangong.stock.model.StockCategoryVO">
+       INSERT INTO ST_STOCK_CATEGORY_LINK
+   		(ID, CATEGORY_NO, STOCK_ID)  
+       VALUES ( get_seq('ST_STOCK_CATEGORY_LINK'), #{categoryNo}, #{stockId}) 
+	 ON DUPLICATE KEY UPDATE 
+		CATEGORY_NO = #{categoryNo}, STOCK_ID = #{stockId} 
+    </update>
+    
+    <update id="stockDailyPriceSave" parameterType="com.kangong.stock.model.StockDailyPriceVO">
+       INSERT INTO ST_STOCK_DAILY_PRICE 
+   		 (ID, STOCK_ID, TRADING_DATE, CLOSING_PRICE, PREVIOUS_DAY_RATE, FLUCTUATION_RATE, VOLUMN, ORGAN_TRADING_VOLUMN, FOREIGN_TRADING_VOLUMN, FOREIGN_HOLDING_VOLUMN, FOREIGN_HOLDING_RATE)  
+	  VALUES 
+		 ( get_seq('ST_STOCK_DAILY_PRICE'), #{stockId}, #{tradingDate}, #{closingPrice}, #{previousDayRate}, #{fluctuationRate}, #{volumn}, #{organTradingVolumn}, #{foreignTradingVolumn}, #{foreignHoldingVolumn}, #{foreignHoldingRate}) 
+	 ON DUPLICATE KEY UPDATE 
+		CLOSING_PRICE = #{closingPrice}, PREVIOUS_DAY_RATE = #{previousDayRate}, FLUCTUATION_RATE = #{fluctuationRate}, VOLUMN = #{volumn}, ORGAN_TRADING_VOLUMN = #{organTradingVolumn}, FOREIGN_TRADING_VOLUMN = #{foreignTradingVolumn}, FOREIGN_HOLDING_VOLUMN = #{foreignHoldingVolumn}, FOREIGN_HOLDING_RATE = #{foreignHoldingRate} 
+    </update>
+
+
+</mapper>

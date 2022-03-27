@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="seckim.commontable">
+
+		<select id="importData" parameterType="com.kangong.common.commontable.model.CommonTableVO" resultType="com.kangong.common.commontable.model.CommonTableColumnVO">
+         	SELECT c.id, COALESCE(c.column_code,a.column_name) columnCode, COALESCE(c.column_comment,a.column_comment) columnComment, COALESCE(c.column_type,a.COLUMN_type) columnType,
+			      case when c.input_type is not null then c.input_type
+                	   when a.data_type = 'date' then 'date'
+                	   else 'text' end inputType,
+           		 COALESCE(c.column_max,a.CHARACTER_MAXIMUM_LENGTH) columnMax, c.column_pattern columnPattern,
+			     COALESCE(c.COLUMN_ORDER, a.ORDINAL_POSITION+100) columnOrder
+			FROM information_schema.columns a
+			  LEFT OUTER JOIN st_common_table_master m  ON ( a.TABLE_NAME = m.TABLE_CODE AND  M.DELETE_YN='N' )
+			  LEFT OUTER JOIN  st_common_table_column c  ON (m.id=c.master_id AND a.COLUMN_NAME=c.COLUMN_CODE AND C.DELETE_YN='N')
+			<where>
+			<if test="paramType == null and paramType==''">
+				AND a.COLUMN_NAME not in ('ID','CREATE_DATE','CREATE_USER','UPDATE_DATE','UPDATE_USER','DELETE_YN')
+			</if>
+			<if test="paramType == 'input'">
+				AND a.COLUMN_NAME not in ('CREATE_DATE','CREATE_USER','UPDATE_DATE','UPDATE_USER','DELETE_YN')
+			</if>
+				AND a.TABLE_NAME = #{tableCode}
+			</where>
+			 ORDER BY columnOrder
+    	</select>
+
+	   <select id="list" parameterType="com.kangong.common.commontable.model.CommonTableVO" resultType="com.kangong.common.commontable.model.CommonTableVO">
+         	SELECT  ID id, CREATE_DATE createDate, CREATE_USER createUser, UPDATE_DATE updateDate, UPDATE_USER updateUser, DELETE_YN deleteYn,
+         		TABLE_CODE tableCode, TABLE_NAME tableName, TABLE_DESC tableDesc
+ 			FROM ST_COMMON_TABLE_MASTER m
+		<where>
+				AND m.DELETE_YN = 'N'
+	        <if test="id != null and id !=''">
+	        	AND m.ID = #{id}
+	        </if>
+	         <if test="tableCode != null and tableCode !=''">
+	        	AND m.TABLE_CODE like CONCAT('%',#{tableCode},'%')
+
+	        </if>
+	        <if test="tableName != null and tableName !=''">
+	        	AND m.TABLE_NAME like CONCAT('%',#{tableName},'%')
+	        </if>
+		</where>
+		LIMIT #{startList}, #{listSize}
+    </select>
+
+    <select id="listCnt" parameterType="com.kangong.common.commontable.model.CommonTableVO" resultType="int">
+		SELECT
+			count(*) as listCnt
+		FROM ST_COMMON_TABLE_MASTER m
+		<where>
+				AND m.DELETE_YN = 'N'
+	        <if test="id != null and id !=''">
+	        	AND m.ID = #{id}
+	        </if>
+	         <if test="tableCode != null and tableCode !=''">
+	        	AND m.TABLE_CODE like CONCAT('%',#{tableCode},'%')
+
+	        </if>
+	        <if test="tableName != null and tableName !=''">
+	        	AND m.TABLE_NAME like CONCAT('%',#{tableName},'%')
+	        </if>
+		</where>
+	</select>
+
+
+    <select id="select" resultType="com.kangong.common.commontable.model.CommonTableVO">
+        	SELECT  ID id, CREATE_DATE createDate, CREATE_USER createUser, UPDATE_DATE updateDate, UPDATE_USER updateUser, DELETE_YN deleteYn,
+         		TABLE_CODE tableCode, TABLE_NAME tableName, TABLE_DESC tableDesc
+ 			FROM ST_COMMON_TABLE_MASTER m
+		<where>
+				AND m.DELETE_YN = 'N'
+	        	AND m.ID = #{id}
+		</where>
+    </select>
+
+	 <insert id="insert" parameterType="com.kangong.common.commontable.model.CommonTableVO">
+        INSERT INTO ST_COMMON_TABLE_MASTER
+		   (ID, CREATE_DATE, CREATE_USER, UPDATE_DATE, UPDATE_USER,  TABLE_CODE, TABLE_NAME, TABLE_DESC)
+		 VALUES
+		   ( #{id}, now(), #{createUser}, now(), #{updateUser},  #{tableCode}, #{tableName}, #{tableDesc})
+    </insert>
+
+    <update id="update" parameterType="com.kangong.common.commontable.model.CommonTableVO">
+        UPDATE ST_COMMON_TABLE_MASTER
+		 SET UPDATE_DATE = now(), UPDATE_USER = #{updateUser},
+		 	TABLE_CODE = #{tableCode}, TABLE_NAME = #{tableName}, TABLE_DESC = #{tableDesc}
+		 WHERE ID =#{id}
+    </update>
+
+   <update id="delete" parameterType="com.kangong.common.commontable.model.CommonTableVO">
+        UPDATE ST_COMMON_TABLE_MASTER
+		SET
+		   UPDATE_DATE = NOW()
+		  ,UPDATE_USER = #{updateUser}
+		  ,DELETE_YN = 'Y'
+		WHERE ID =#{id}
+    </update>
+
+
+	<select id="listItem" resultType="com.kangong.common.commontable.model.CommonTableColumnVO">
+		 SELECT  ID id, CREATE_DATE createDate, CREATE_USER createUser, UPDATE_DATE updateDate, UPDATE_USER updateUser, DELETE_YN deleteYn, MASTER_ID masterId, COLUMN_CODE columnCode, COLUMN_COMMENT columnComment, COLUMN_TYPE columnType, INPUT_TYPE inputType, COLUMN_SIZE columnSize, COLUMN_MAX columnMax, COLUMN_PATTERN columnPattern, COLUMN_ORDER columnOrder
+ 		FROM ST_COMMON_TABLE_COLUMN  r
+		<where>
+			AND r.DELETE_YN = 'N'
+	        <if test="id != null and id !=''">
+	        	AND r.master_ID = #{masterId}
+	        </if>
+		</where>
+		ORDER BY r.create_Date desc
+	</select>
+
+	<insert id="insertItem" parameterType="com.kangong.common.commontable.model.CommonTableColumnVO">
+		INSERT INTO ST_COMMON_TABLE_COLUMN
+		   (ID, CREATE_DATE, CREATE_USER, UPDATE_DATE, UPDATE_USER, MASTER_ID, COLUMN_CODE, COLUMN_COMMENT, COLUMN_TYPE, INPUT_TYPE, COLUMN_SIZE, COLUMN_MAX, COLUMN_PATTERN, COLUMN_ORDER)
+		 VALUES
+		   ( #{id}, now(), #{createUser}, now(), #{updateUser}, #{masterId}, #{columnCode}, #{columnComment}, #{columnType}, #{inputType}, #{columnSize}, #{columnMax}, #{columnPattern}, #{columnOrder})
+
+	</insert>
+
+	<update id="updateItem" parameterType="com.kangong.common.commontable.model.CommonTableColumnVO">
+		UPDATE ST_COMMON_TABLE_COLUMN
+		 	SET UPDATE_DATE = now(), UPDATE_USER = #{updateUser}, MASTER_ID = #{masterId}, COLUMN_CODE = #{columnCode}, COLUMN_COMMENT = #{columnComment}, COLUMN_TYPE = #{columnType}, INPUT_TYPE = #{inputType}, COLUMN_SIZE = #{columnSize}, COLUMN_MAX = #{columnMax}, COLUMN_PATTERN = #{columnPattern}, COLUMN_ORDER = #{columnOrder}
+		 WHERE ID =#{id}
+	</update>
+
+	<update id="deleteItem" parameterType="com.kangong.common.commontable.model.CommonTableColumnVO">
+		UPDATE ST_COMMON_TABLE_COLUMN
+		SET
+		   UPDATE_DATE = NOW()
+		  ,UPDATE_USER = #{updateUser}
+		  ,DELETE_YN = 'Y'
+		WHERE ID =#{id}
+	</update>
+
+
+	<select id="tableDataList" parameterType="java.util.Map" resultType="java.util.Map">
+		 SELECT  ${selectColumn}
+ 		from ${tableName} d
+		<where>
+			AND d.DELETE_YN = 'N'
+		</where>
+		ORDER BY d.create_Date desc
+	</select>
+	
+	<update id="updateTableData" parameterType="java.util.Map">
+	  ${updateStatement}
+	</update>
+
+</mapper>

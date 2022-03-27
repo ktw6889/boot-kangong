@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+<mapper namespace="kangong.user">
+	<select id="idGen" resultType="String">
+	   SELECT get_seq(#{tableName});
+	</select>
+
+	<select id="select" parameterType="com.kangong.user.model.UserVO" resultType="com.kangong.user.model.UserVO">
+        SELECT ID, CREATE_DATE createDate, CREATE_USER createUser, UPDATE_DATE updateDate, UPDATE_USER updateUser, USER_ID userId, USER_NAME userName, PASSWORD, AGE, GENDER, BIRTH_DATE birthDate, CITY, HOBBY, COMMENT
+		FROM st_user_info U
+        <where>
+	        <if test="userId != null and userId !=''">
+	        	AND U.USER_ID = #{userId}
+	        </if>
+	        <if test="id != null and id !=''">
+	        	AND U.ID = #{id}
+	        </if>
+		</where>
+    </select>
+
+     <insert id="insert" parameterType="com.kangong.user.model.UserVO">
+        INSERT INTO st_user_info(
+		   	ID,CREATE_DATE,CREATE_USER,UPDATE_DATE,UPDATE_USER,USER_ID,USER_NAME,PASSWORD,AGE,GENDER,BIRTH_DATE,CITY,HOBBY,COMMENT)
+		VALUES (
+			   #{id}, NOW(),#{createUser},NOW(),#{createUser},#{userId},#{userName},#{password},#{age},#{gender},#{birthDate},#{city},#{hobby},#{comment}
+		)
+    </insert>
+
+    <update id="update" parameterType="com.kangong.user.model.UserVO">
+        UPDATE st_user_info
+		SET
+		   UPDATE_DATE = NOW()
+		  ,UPDATE_USER = #{updateUser}
+		  ,USER_ID = #{userId}
+		  ,USER_NAME = #{userName}
+		  ,PASSWORD = #{password}
+		  ,AGE = #{age}
+		  ,GENDER = #{gender}
+		  ,BIRTH_DATE = #{birthDate}
+		  ,CITY = #{city}
+		  ,HOBBY = #{hobby}
+		  ,COMMENT = #{comment}
+		WHERE ID =#{id}
+    </update>
+
+   <update id="delete" parameterType="com.kangong.user.model.UserVO">
+        UPDATE st_user_info
+		SET
+		   UPDATE_DATE = NOW()
+		  ,UPDATE_USER = #{updateUser}
+		  ,DELETE_YN = 'Y'
+		WHERE ID =#{id}
+    </update>
+
+    <select id="itemSelect" parameterType="com.kangong.user.model.UserVO" resultType="com.kangong.user.model.UserItemVO">
+        SELECT ID, CREATE_DATE createDate, CREATE_USER createUser, UPDATE_DATE updateDate, UPDATE_USER updateUser, DELETE_YN deleteYn, USER_INFO_ID userInfoId,
+		  DISPLAY_ORDER displayOrder, PROJECT_COMPANY projectCompany, PROJECT_NAME projectName, PROJECT_YEAR projectYear, APPLY_MODULE applyModule, DESCRIPTION description
+		FROM ST_USER_INFO_ITEM I
+        <where>
+	        	AND I.USER_INFO_ID = #{id}
+	    </where>
+    </select>
+
+    <insert id="itemInsert" parameterType="com.kangong.user.model.UserItemVO">
+        INSERT INTO st_user_info_item(
+		   	ID,CREATE_DATE,CREATE_USER,UPDATE_DATE,UPDATE_USER,USER_INFO_ID,DISPLAY_ORDER,PROJECT_COMPANY,
+			PROJECT_NAME, PROJECT_YEAR, APPLY_MODULE, DESCRIPTION)
+		VALUES (
+			   #{id},NOW(),'ADMIN',NOW(),'ADMIN',#{userInfoId},#{displayOrder},#{projectCompany},
+				#{projectName},#{projectYear},#{applyModule},#{description}
+		 )
+    </insert>
+
+    <update id="itemUpdate" parameterType="com.kangong.user.model.UserItemVO">
+       UPDATE st_user_info_item
+	   SET
+	      UPDATE_DATE = NOW(), UPDATE_USER = 'ADMIN', USER_INFO_ID = #{userInfoId}, DISPLAY_ORDER = #{displayOrder},
+		  PROJECT_COMPANY = #{projectCompany}, PROJECT_NAME = #{projectName}, PROJECT_YEAR = #{projectYear},
+		  APPLY_MODULE = #{applyModule}, DESCRIPTION = #{description}
+		WHERE ID =#{id}
+    </update>
+
+   <update id="itemDelete" parameterType="com.kangong.user.model.UserItemVO">
+        UPDATE st_user_info_item
+		SET
+		   UPDATE_DATE = NOW()
+		  ,UPDATE_USER = 'admin'
+		  ,DELETE_YN = 'Y'
+		WHERE ID =#{id}
+    </update>
+
+
+     <select id="read" resultMap="memberMap">
+		SELECT U.ID id, U.USER_ID userId, U.PASSWORD password, U.USER_NAME userName, IF(U.DELETE_YN='N',1,0) enabled, U.CREATE_DATE createDate, U.UPDATE_DATE updatedate, IFNULL(AUTHORITY, 'ROLE_MEMBER') auth
+		FROM ST_USER_INFO U LEFT OUTER JOIN ST_USER_AUTHORITIES AUTH ON U.ID = AUTH.USER_INFO_ID
+		WHERE U.USER_ID = #{userid} 
+  </select>
+  
+   <resultMap type="com.kangong.common.security.model.MemberVO" id="memberMap">
+    <id property="id" column="id"/>
+     <result property="id" column="id"/>
+    <result property="userId" column="userId"/>
+    <result property="password" column="password"/>
+    <result property="userName" column="userName"/>
+    <result property="createDate" column="createDate"/>
+    <result property="updateDate" column="updatedate"/>
+    <collection property="authList" resultMap="authMap">
+    </collection> 
+  </resultMap>
+  
+    <resultMap type="com.kangong.common.security.model.AuthVO" id="authMap">
+    <result property="userid" column="userid"/>
+    <result property="auth" column="auth"/>
+  </resultMap>
+  
+  
+     <insert id="insertSimple" parameterType="com.kangong.user.model.UserVO">
+        INSERT INTO st_user_info(
+		   	ID,CREATE_DATE,CREATE_USER,UPDATE_DATE,UPDATE_USER,USER_ID,USER_NAME,PASSWORD)
+		VALUES (
+			   #{id}, NOW(),'admin',NOW(),'admin',#{userId},#{userName},#{password}
+		)
+    </insert>
+    
+    <update id="updateSimple" parameterType="com.kangong.user.model.UserVO">
+        UPDATE st_user_info
+		SET
+		   UPDATE_DATE = NOW()
+		  ,UPDATE_USER = 'admin'
+		  ,USER_ID = #{userId}
+		  ,USER_NAME = #{userName}
+		  ,PASSWORD = #{password}
+		WHERE ID =#{id}
+    </update>
+
+</mapper>

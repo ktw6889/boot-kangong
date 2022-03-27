@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE tiles-definitions PUBLIC
+       "-//Apache Software Foundation//DTD Tiles Configuration 3.0//EN"
+       "http://tiles.apache.org/dtds/tiles-config_3_0.dtd">
+ 
+<tiles-definitions>
+ 
+    <!-- (1) 레이아웃을 적용하지않는화면-->    
+    <definition name=".login" template="/views/tilesLayout/loginLayout.jsp">
+        <put-attribute name="title" value="" />
+        <put-attribute name="header" value="/views/tilesView/header.jsp" />
+        <put-attribute name="menu" value="" />        
+        <put-attribute name="footer" value="" />
+    </definition>
+ 
+    <!-- (2) 레이아웃을 적용하는화면-->
+    <definition name=".root" template="/views/tilesLayout/baseLayout.jsp">
+        <put-attribute name="title" value="" />
+        <put-attribute name="header" value="/views/tilesView/header.jsp" />
+        <put-attribute name="menu" value="/views/tilesView/menu.jsp" />        
+        <put-attribute name="footer" value="/views/tilesView/footer.jsp" />
+    </definition>
+    
+    <!-- (1) -->    
+    <definition name="/login/*" extends=".login">
+      <put-attribute name="body" value="/views/login/{1}.jsp" />
+    </definition>
+ 
+    <!-- (2) -->
+     <definition name="kims:/*" extends=".root">      
+      <put-attribute name="body" value="/views/{1}.jsp" />
+    </definition>
+   <definition name="kims:/*/*" extends=".root">      
+      <put-attribute name="body" value="/views/{1}/{2}.jsp" />
+    </definition>
+    <definition name="kims:/*/*/*" extends=".root">      
+      <put-attribute name="body" value="/views/{1}/{2}/{3}.jsp" />
+    </definition>
+    <definition name="kims:/*/*/*/*" extends=".root">      
+      <put-attribute name="body" value="/views/{1}/{2}/{3}/{4}.jsp" />
+    </definition>
+</tiles-definitions>
+

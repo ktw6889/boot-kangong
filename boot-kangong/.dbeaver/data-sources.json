@@ -1,0 +1,53 @@
+{
+	"folders": {},
+	"connections": {
+		"mysql8-17d24d5b636-21cd82f4e3028379": {
+			"provider": "mysql",
+			"driver": "mysql8",
+			"name": "SECKIMDB",
+			"save-password": true,
+			"read-only": false,
+			"configuration": {
+				"host": "localhost",
+				"port": "3306",
+				"database": "SECKIMDB",
+				"url": "jdbc:mysql://localhost:3306/SECKIMDB",
+				"home": "D:\\ProgramInstall\\mysql-8.0.27",
+				"type": "dev",
+				"properties": {
+					"connectTimeout": "20000",
+					"rewriteBatchedStatements": "true",
+					"enabledTLSProtocols": "TLSv1,TLSv1.1,TLSv1.2"
+				},
+				"auth-model": "native"
+			}
+		}
+	},
+	"virtual-models": {
+		"mysql8-17d24d5b636-21cd82f4e3028379": {
+			"seckimdb": {
+				":st_stock_interest": {
+					"constraints": {
+						"VIRTUAL_PK": {
+							"type": "vpk",
+							"attributes": [
+								"STOCK_ID"
+							]
+						}
+					}
+				}
+			}
+		}
+	},
+	"connection-types": {
+		"dev": {
+			"name": "Development",
+			"color": "255,255,255",
+			"description": "Regular development database",
+			"auto-commit": true,
+			"confirm-execute": false,
+			"confirm-data-change": false,
+			"auto-close-transactions": false
+		}
+	}
+}

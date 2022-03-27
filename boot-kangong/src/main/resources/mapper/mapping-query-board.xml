@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="seckim.board">
+
+    <select id="select" parameterType="com.kangong.board.model.BoardVO" resultType="com.kangong.board.model.BoardVO">
+       SELECT b.ID, b.CREATE_DATE createDate, b.CREATE_USER createUser, b.UPDATE_DATE updateDate, b.UPDATE_USER updateUser, b.DELETE_YN deleteYn,
+        	CATEGORY_ID categoryId, TITLE, content, TAG, view_cnt viewCnt
+		FROM st_board b, st_user_info u
+		<where>
+		    and b.CREATE_USER = u.id
+			AND b.DELETE_YN = 'N'
+	        <if test="id != null and id !=''">
+	        	AND b.ID = #{id}
+	        </if>
+	         <if test="keyword != null and keyword !='' and searchType == 'title'">
+	        	AND b.title like CONCAT('%',#{keyword},'%')
+	        </if>
+	        <if test="keyword != null and keyword !='' and searchType == 'content'">
+	        	AND b.content like CONCAT('%',#{keyword},'%')
+	        </if>
+	        <if test="keyword != null and keyword !='' and searchType == 'createUser'">
+	        	AND u.USER_NAME like CONCAT('%',#{keyword},'%')
+	        </if>
+		</where>
+		ORDER BY b.CREATE_DATE DESC
+		LIMIT #{startList}, #{listSize}		
+    </select>
+
+    <select id="listCnt" parameterType="com.kangong.board.model.BoardVO" resultType="int">
+		SELECT
+			count(*) as listCnt
+		FROM ST_BOARD b
+		<where>
+	        <if test="id != null and id !=''">
+	        	AND b.ID = #{id}
+	        </if>
+	        <if test="title != null and title !=''">
+	        	AND b.title like CONCAT('%',#{title},'%')
+
+	        </if>
+	        <if test="content != null and content !=''">
+	        	AND b.content like CONCAT('%',#{content},'%')
+	        </if>
+	           AND b.DELETE_YN = 'N'
+		</where>
+	</select>
+
+
+    <select id="selectBoardInfo" resultType="com.kangong.board.model.BoardVO">
+        SELECT ID, CREATE_DATE createDate, CREATE_USER createUser, UPDATE_DATE updateDate, UPDATE_USER updateUser, DELETE_YN deleteYn,
+        	CATEGORY_ID categoryId, TITLE, content, TAG, view_cnt viewCnt
+		FROM st_board b
+		<where>
+				AND b.DELETE_YN = 'N'
+	        	AND b.ID = #{id}
+		</where>
+    </select>
+
+	 <insert id="insert" parameterType="com.kangong.board.model.BoardVO">
+        INSERT INTO st_board
+		(ID, CREATE_DATE, CREATE_USER, UPDATE_DATE, UPDATE_USER, CATEGORY_ID, TITLE, content, TAG)
+		VALUES (#{id}, now(),#{createUser},now(),#{updateUser},#{categoryId},#{title},#{content},#{tag});
+    </insert>
+
+    <update id="update" parameterType="com.kangong.board.model.BoardVO">
+        UPDATE st_board
+		SET UPDATE_DATE = now(), UPDATE_USER = #{updateUser}, CATEGORY_ID = #{categoryId}, TITLE = #{title},
+			content = #{content}, TAG = #{tag}
+		WHERE ID =#{id};
+    </update>
+
+   <update id="delete" parameterType="com.kangong.board.model.BoardVO">
+        UPDATE st_board
+		SET
+		   UPDATE_DATE = NOW()
+		  ,UPDATE_USER = #{updateUser}
+		  ,DELETE_YN = 'Y'
+		WHERE ID =#{id}
+    </update>
+
+    <update id="updateViewCnt" parameterType="com.kangong.board.model.BoardVO">
+		UPDATE st_board
+		SET VIEW_CNT = VIEW_CNT + 1
+		WHERE ID =#{id}
+	</update>
+
+
+	<select id="listReply" resultType="com.kangong.board.model.BoardReplyVO">
+		SELECT ID, CREATE_DATE createDate, CREATE_USER createUser, UPDATE_DATE updateDate, DELETE_YN deleteYn, BOARD_ID boardId, content
+		FROM st_board_reply r
+		<where>
+			AND r.DELETE_YN = 'N'
+	        <if test="id != null and id !=''">
+	        	AND r.BOARD_ID = #{boardId}
+	        </if>
+		</where>
+		ORDER BY createDate desc
+	</select>
+
+	<insert id="saveReply" parameterType="com.kangong.board.model.BoardReplyVO">
+		INSERT INTO st_board_reply
+			(ID, CREATE_DATE, CREATE_USER, UPDATE_DATE, UPDATE_USER, BOARD_ID, content)
+		VALUES (#{id},now(),#{createUser},now(),#{updateUser},#{boardId},#{content});
+	</insert>
+
+	<update id="updateReply" parameterType="com.kangong.board.model.BoardReplyVO">
+		UPDATE ST_BOARD_REPLY SET
+			CONTENT = #{content}
+			, UPDATE_USER = #{updateUser}
+			, UPDATE_DATE = now()
+		WHERE
+			ID = #{id}
+	</update>
+
+	<update id="deleteReply" parameterType="String">
+		UPDATE ST_BOARD_REPLY
+		SET
+		   UPDATE_DATE = NOW()
+		  ,DELETE_YN = 'Y'
+		WHERE ID =#{id}
+	</update>
+
+</mapper>
