@@ -1,0 +1,676 @@
+/* ============================
+   Board Common Styles
+   ============================ */
+
+.board-container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0 15px;
+}
+
+.board-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid #343a40;
+}
+
+.board-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #212529;
+}
+
+.board-header .badge {
+    margin-left: 10px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    vertical-align: middle;
+}
+
+/* ============================
+   List Page
+   ============================ */
+
+.board-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.board-table thead {
+    background-color: #343a40;
+    color: #fff;
+}
+
+.board-table thead th {
+    padding: 12px 14px;
+    font-weight: 600;
+    text-align: center;
+    border: none;
+    white-space: nowrap;
+}
+
+.board-table tbody tr {
+    border-bottom: 1px solid #e9ecef;
+    transition: background-color 0.15s ease;
+}
+
+.board-table tbody tr:hover {
+    background-color: #f1f3f5;
+}
+
+.board-table tbody td {
+    padding: 11px 14px;
+    text-align: center;
+    vertical-align: middle;
+    color: #495057;
+}
+
+.board-table tbody td.td-title {
+    text-align: left;
+    max-width: 400px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.board-table tbody td.td-title a {
+    color: #212529;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.board-table tbody td.td-title a:hover {
+    color: #0d6efd;
+    text-decoration: underline;
+}
+
+.board-table tbody td.td-empty {
+    padding: 40px 0;
+    color: #adb5bd;
+    font-size: 0.95rem;
+}
+
+.board-table .td-no {
+    width: 60px;
+    color: #868e96;
+    font-size: 0.85rem;
+}
+
+.board-table .td-author {
+    width: 120px;
+}
+
+.board-table .td-count {
+    width: 80px;
+    color: #868e96;
+}
+
+.board-table .td-date {
+    width: 110px;
+    color: #868e96;
+    font-size: 0.85rem;
+}
+
+/* List Toolbar */
+.board-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+
+/* Search */
+.board-search {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 16px;
+    justify-content: center;
+}
+
+.board-search select {
+    width: 120px;
+}
+
+.board-search input {
+    width: 260px;
+}
+
+/* Pagination Override */
+#paginationBox {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+#paginationBox .pagination {
+    margin: 0;
+}
+
+#paginationBox .page-link {
+    color: #495057;
+    border-color: #dee2e6;
+    font-size: 0.85rem;
+    padding: 6px 12px;
+}
+
+#paginationBox .page-item.active .page-link {
+    background-color: #343a40;
+    border-color: #343a40;
+    color: #fff;
+}
+
+#paginationBox .page-link:hover {
+    background-color: #e9ecef;
+    color: #212529;
+}
+
+/* ============================
+   View Page
+   ============================ */
+
+.board-view-card {
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #fff;
+}
+
+.board-view-title {
+    padding: 20px 24px 14px;
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #212529;
+    border-bottom: 1px solid #f1f3f5;
+}
+
+.board-view-meta {
+    display: flex;
+    gap: 16px;
+    padding: 10px 24px;
+    font-size: 0.85rem;
+    color: #868e96;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.board-view-meta span {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.board-view-body {
+    padding: 24px;
+    min-height: 200px;
+    line-height: 1.7;
+    color: #333;
+    font-size: 0.95rem;
+    word-break: break-word;
+}
+
+.board-view-tag {
+    padding: 12px 24px;
+    font-size: 0.8rem;
+    color: #868e96;
+    border-top: 1px solid #f1f3f5;
+    background: #f8f9fa;
+}
+
+.board-view-tag .tag-label {
+    display: inline-block;
+    background: #e9ecef;
+    padding: 2px 10px;
+    border-radius: 12px;
+    margin-left: 4px;
+    color: #495057;
+    font-size: 0.8rem;
+}
+
+/* View Buttons */
+.board-view-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 20px;
+}
+
+/* ============================
+   Reply Section
+   ============================ */
+
+.board-reply-section {
+    margin-top: 30px;
+}
+
+.board-reply-form {
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 20px;
+    background: #fff;
+}
+
+.board-reply-form h6 {
+    font-weight: 700;
+    margin-bottom: 14px;
+    color: #212529;
+    font-size: 0.95rem;
+}
+
+.board-reply-list {
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 20px;
+    background: #fff;
+    margin-top: 16px;
+}
+
+.board-reply-list h6 {
+    font-weight: 700;
+    margin-bottom: 14px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #e9ecef;
+    color: #212529;
+    font-size: 0.95rem;
+}
+
+.reply-item {
+    display: flex;
+    gap: 12px;
+    padding: 14px 0;
+    border-bottom: 1px solid #f1f3f5;
+}
+
+.reply-item:last-child {
+    border-bottom: none;
+}
+
+.reply-avatar {
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #4263eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.85rem;
+}
+
+.reply-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.reply-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+}
+
+.reply-author {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #212529;
+}
+
+.reply-actions a {
+    font-size: 0.78rem;
+    color: #868e96;
+    text-decoration: none;
+    margin-left: 4px;
+}
+
+.reply-actions a:hover {
+    color: #495057;
+    text-decoration: underline;
+}
+
+.reply-content {
+    font-size: 0.9rem;
+    color: #495057;
+    line-height: 1.6;
+}
+
+.reply-empty {
+    text-align: center;
+    padding: 20px;
+    color: #adb5bd;
+    font-size: 0.9rem;
+}
+
+/* ============================
+   Edit Page
+   ============================ */
+
+.board-form {
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 28px;
+    background: #fff;
+}
+
+.board-form .form-group {
+    margin-bottom: 20px;
+}
+
+.board-form label {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #343a40;
+    margin-bottom: 6px;
+    display: block;
+}
+
+.board-form .form-control {
+    border-radius: 6px;
+    border: 1px solid #ced4da;
+    font-size: 0.9rem;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.board-form .form-control:focus {
+    border-color: #4263eb;
+    box-shadow: 0 0 0 3px rgba(66, 99, 235, 0.15);
+}
+
+.board-form .form-control-plaintext {
+    font-size: 0.9rem;
+    color: #495057;
+    background: #f8f9fa;
+    padding: 6px 12px;
+    border-radius: 6px;
+}
+
+.board-form-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid #e9ecef;
+}
+
+/* ============================
+   Button Styles
+   ============================ */
+
+.btn-board-primary {
+    background-color: #343a40;
+    border-color: #343a40;
+    color: #fff;
+    font-size: 0.85rem;
+    font-weight: 500;
+    padding: 7px 20px;
+    border-radius: 6px;
+    transition: background-color 0.15s ease;
+}
+
+.btn-board-primary:hover {
+    background-color: #23272b;
+    border-color: #23272b;
+    color: #fff;
+}
+
+.btn-board-outline {
+    background-color: #fff;
+    border: 1px solid #ced4da;
+    color: #495057;
+    font-size: 0.85rem;
+    font-weight: 500;
+    padding: 7px 20px;
+    border-radius: 6px;
+    transition: all 0.15s ease;
+}
+
+.btn-board-outline:hover {
+    background-color: #f8f9fa;
+    border-color: #adb5bd;
+    color: #212529;
+}
+
+.btn-board-danger {
+    background-color: #fff;
+    border: 1px solid #f03e3e;
+    color: #f03e3e;
+    font-size: 0.85rem;
+    font-weight: 500;
+    padding: 7px 20px;
+    border-radius: 6px;
+    transition: all 0.15s ease;
+}
+
+.btn-board-danger:hover {
+    background-color: #f03e3e;
+    color: #fff;
+}
+
+/* CKEditor Override */
+.ck.ck-editor {
+    max-width: 100%;
+}
+
+.ck-editor__editable {
+    min-height: 400px;
+}
+
+/* ============================
+   Admin Wide Container
+   ============================ */
+
+.board-container-wide {
+    max-width: 1140px;
+    margin: 0 auto;
+    padding: 0 15px;
+}
+
+/* ============================
+   Detail Info Card (View)
+   ============================ */
+
+.detail-card {
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #fff;
+    margin-bottom: 24px;
+}
+
+.detail-row {
+    display: flex;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.detail-row:last-child {
+    border-bottom: none;
+}
+
+.detail-label {
+    flex: 0 0 140px;
+    padding: 10px 16px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #fff;
+    background: #343a40;
+    display: flex;
+    align-items: center;
+}
+
+.detail-value {
+    flex: 1;
+    padding: 10px 16px;
+    font-size: 0.9rem;
+    color: #495057;
+    display: flex;
+    align-items: center;
+}
+
+/* ============================
+   Admin Grid Table (editable)
+   ============================ */
+
+.admin-grid {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.admin-grid thead {
+    background: #343a40;
+    color: #fff;
+}
+
+.admin-grid thead th {
+    padding: 10px 8px;
+    font-weight: 600;
+    text-align: center;
+    border: none;
+    white-space: nowrap;
+    font-size: 0.82rem;
+}
+
+.admin-grid tbody tr {
+    border-bottom: 1px solid #e9ecef;
+    transition: background-color 0.15s ease;
+}
+
+.admin-grid tbody tr:hover {
+    background-color: #f1f3f5;
+}
+
+.admin-grid tbody td {
+    padding: 6px 6px;
+    text-align: center;
+    vertical-align: middle;
+    color: #495057;
+    font-size: 0.85rem;
+}
+
+.admin-grid tbody td a {
+    color: #212529;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.admin-grid tbody td a:hover {
+    color: #0d6efd;
+    text-decoration: underline;
+}
+
+.admin-grid tbody td.td-empty {
+    padding: 40px 0;
+    color: #adb5bd;
+}
+
+.admin-grid input[type="text"],
+.admin-grid input[type="number"],
+.admin-grid input[type="date"] {
+    width: 100%;
+    padding: 5px 8px;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    font-size: 0.82rem;
+    color: #495057;
+    transition: border-color 0.15s ease;
+    box-sizing: border-box;
+}
+
+.admin-grid input:focus {
+    border-color: #4263eb;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(66, 99, 235, 0.12);
+}
+
+.admin-grid select {
+    width: 100%;
+    padding: 5px 6px;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    font-size: 0.82rem;
+    color: #495057;
+    background: #fff;
+}
+
+.admin-grid .checkbox {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+/* Grid Row Actions */
+.grid-row-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 6px;
+    margin-bottom: 12px;
+}
+
+.btn-grid-action {
+    background: #fff;
+    border: 1px solid #ced4da;
+    color: #495057;
+    font-size: 0.8rem;
+    font-weight: 500;
+    padding: 5px 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.15s ease;
+}
+
+.btn-grid-action:hover {
+    background: #f8f9fa;
+    border-color: #adb5bd;
+    color: #212529;
+    text-decoration: none;
+}
+
+/* Admin Form Card */
+.admin-form-card {
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 24px;
+    background: #fff;
+    margin-bottom: 24px;
+}
+
+.admin-form-card .form-row {
+    margin-bottom: 0;
+}
+
+.admin-form-card label {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #343a40;
+    margin-bottom: 4px;
+}
+
+.admin-form-card .form-control {
+    border-radius: 6px;
+    font-size: 0.9rem;
+    border: 1px solid #ced4da;
+}
+
+.admin-form-card .form-control:focus {
+    border-color: #4263eb;
+    box-shadow: 0 0 0 3px rgba(66, 99, 235, 0.15);
+}
+
+/* Section Title */
+.section-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #212529;
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e9ecef;
+}

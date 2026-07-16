@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="seckim.mobilestock">
+
+  
+
+    <update id="saveMasterForStockId" parameterType="com.kangong.stock.model.StockVO">
+        INSERT INTO ST_STOCK_MASTER 
+	   		(ID, CREATE_DATE, UPDATE_DATE, STOCK_ID)  
+ 		VALUES 
+   			( get_seq('ST_STOCK_MASTER'), NOW(), NOW(), #{stockId}) 
+		ON DUPLICATE KEY UPDATE 
+			UPDATE_DATE = NOW(), STOCK_ID = #{stockId}
+    </update>
+    
+    <select id="selectIndexList" parameterType="com.kangong.stock.model.StockMarketIndexVO" resultType="com.kangong.stock.model.StockMarketIndexVO">
+		with BASE_YMD AS(
+			select MAX(YYYYMMDD) YMD, 'D-DAY' INDEX_TYPE
+			from ST_STOCK_MARKET_INDEX
+			union all
+			select MIN(YYYYMMDD) YMD, 'D-1W' INDEX_TYPE
+			from ST_STOCK_MARKET_INDEX
+			where STR_TO_DATE(YYYYMMDD,'%Y%m%d') >= DATE_ADD(NOW(), interval-7 day)
+			union all
+			select MIN(YYYYMMDD) YMD, 'D-2W' INDEX_TYPE
+			from ST_STOCK_MARKET_INDEX
+			where STR_TO_DATE(YYYYMMDD,'%Y%m%d') >= DATE_ADD(NOW(), interval-14 day)
+			union all
+			select MIN(YYYYMMDD) YMD, 'D-3W' INDEX_TYPE
+			from ST_STOCK_MARKET_INDEX
+			where STR_TO_DATE(YYYYMMDD,'%Y%m%d') >= DATE_ADD(NOW(), interval-21 day)
+			union all
+			select MIN(YYYYMMDD) YMD, 'D-1M' INDEX_TYPE
+			from ST_STOCK_MARKET_INDEX
+			where STR_TO_DATE(YYYYMMDD,'%Y%m%d') >= DATE_ADD(NOW(), interval-1 month)
+			union all
+			select MIN(YYYYMMDD) YMD, 'D-2M' INDEX_TYPE
+			from ST_STOCK_MARKET_INDEX
+			where STR_TO_DATE(YYYYMMDD,'%Y%m%d') >= DATE_ADD(NOW(), interval-2 month)
+			union all
+			select MIN(YYYYMMDD) YMD, 'D-3M' INDEX_TYPE
+			from ST_STOCK_MARKET_INDEX
+			where STR_TO_DATE(YYYYMMDD,'%Y%m%d') >= DATE_ADD(NOW(), interval-3 month)
+			union all
+			select MIN(YYYYMMDD) YMD, 'D-1Y' INDEX_TYPE
+			from ST_STOCK_MARKET_INDEX
+			where STR_TO_DATE(YYYYMMDD,'%Y%m%d') >= DATE_ADD(NOW(), interval-1 year)
+			union all
+			select MIN(YYYYMMDD) YMD, 'D-2Y' INDEX_TYPE
+			from ST_STOCK_MARKET_INDEX
+			where STR_TO_DATE(YYYYMMDD,'%Y%m%d') >= DATE_ADD(NOW(), interval-2 year)
+			union all
+			select MIN(YYYYMMDD) YMD, 'D-3Y' INDEX_TYPE
+			from ST_STOCK_MARKET_INDEX
+			where STR_TO_DATE(YYYYMMDD,'%Y%m%d') >= DATE_ADD(NOW(), interval-3 year)
+		)	
+		select B.INDEX_TYPE indexType
+			, ID id, CREATE_DATE createDate, UPDATE_DATE updateDate, DELETE_YN deleteYn, YYYYMMDD yyyymmdd, DOMESTIC_INTEREST_CALL domesticInterestCall
+			, DOMESTIC_INTEREST_CD domesticInterestCd, DOMESTIC_INTEREST_COFIX_MANF domesticInterestCofixManf, DOMESTIC_INTEREST_COFIX_OUTB domesticInterestCofixOutb
+			, DOMESTIC_INTEREST_NCOFIX_OUTB domesticInterestNcofixOutb, STANDARD_INTEREST_US standardInterestUs, STANDARD_INTEREST_KR standardInterestKr
+			, STANDARD_INTEREST_EU standardInterestEu, STANDARD_INTEREST_GB standardInterestGb, STANDARD_INTEREST_JP standardInterestJp, METAL_GC metalGc
+			, METAL_CMDT metalCmdt, METAL_SI metalSi, METAL_HG metalHg, METAL_PL metalPl, TRANSPORT_CCF transportCcf, TRANSPORT_SCF transportScf, TRANSPORT_BADI transportBadi
+			, TRANSPORT_BACK transportBack, TRANSPORT_BPNI transportBpni, TRANSPORT_BSIS transportBsis, TRANSPORT_BHSI transportBhsi, TRANSPORT_BAID transportBaid
+			, TRANSPORT_BAIT transportBait, BOND_US10YT bondUs10yt, BOND_KR10YT bondKr10yt, BOND_JP10YT bondJp10yt, BOND_DE10YT bondDe10yt, BOND_CN10YT bondCn10yt
+			, ENERGY_CL energyCl, ENERGY_LCO energyLco, ENERGY_RB energyRb, ENERGY_HO energyHo, ENERGY_DCB energyDcb
+		from ST_STOCK_MARKET_INDEX MI, BASE_YMD B
+		where MI.YYYYMMDD = B.YMD
+		order by B.YMD DESC
+    </select>
+    
+
+</mapper>

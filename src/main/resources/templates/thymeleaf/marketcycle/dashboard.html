@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+
+<th:block th:replace="~{/thymeleaf/marketcycle/layout/marketcycleLayout :: setContent(~{this::content})}">
+<th:block th:fragment="content">
+
+<style>
+    .mc-title { font-size: 1.5rem; font-weight: 700; margin-bottom: 0; }
+    .mc-date { font-size: 0.82rem; color: #6c757d; }
+    .mc-section { margin-bottom: 28px; }
+    .mc-section-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 12px; padding-bottom: 6px; border-bottom: 2px solid #343a40; }
+
+    /* 사이클 다이어그램 */
+    .cycle-wrapper { display: flex; gap: 30px; align-items: flex-start; flex-wrap: wrap; }
+    .cycle-diagram { flex: 0 0 340px; }
+    .cycle-info { flex: 1; min-width: 280px; }
+    .cycle-svg text { font-family: 'Malgun Gothic', sans-serif; }
+    .phase-badge { display: inline-block; font-size: 1.3rem; font-weight: 700; padding: 6px 18px; border-radius: 6px; color: #fff; }
+    .phase-badge-sm { font-size: 1rem; padding: 4px 14px; }
+    .phase-desc { margin-top: 10px; font-size: 0.92rem; color: #495057; line-height: 1.6; }
+    .phase-next { margin-top: 10px; padding: 10px 14px; background: #f8f9fa; border-left: 3px solid #6c757d; font-size: 0.85rem; color: #495057; border-radius: 0 4px 4px 0; }
+    .theory-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .theory-card { padding: 12px; border-radius: 8px; border: 2px solid; }
+    .theory-card.active-phase { box-shadow: 0 0 0 3px rgba(0,123,255,0.3); transform: scale(1.02); }
+    .theory-card h6 { font-weight: 700; margin-bottom: 4px; font-size: 0.9rem; }
+    .theory-card p { font-size: 0.8rem; margin-bottom: 0; color: #495057; }
+
+    /* 타임라인 */
+    .timeline-box { background: #fff; border: 1px solid #dee2e6; border-radius: 10px; padding: 20px; margin-bottom: 20px; }
+    .timeline-bar-wrap { position: relative; height: 40px; background: #e9ecef; border-radius: 20px; overflow: hidden; margin: 16px 0 8px; }
+    .timeline-bar-fill { height: 100%; border-radius: 20px 0 0 20px; display: flex; align-items: center; justify-content: flex-end; padding-right: 14px; color: #fff; font-weight: 700; font-size: 0.9rem; }
+    .timeline-bar-prepare { position: absolute; top: 0; height: 100%; background: repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(255,255,255,0.15) 5px, rgba(255,255,255,0.15) 10px); border-left: 3px dashed #fff; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 600; font-size: 0.78rem; }
+    .timeline-labels { display: flex; justify-content: space-between; font-size: 0.8rem; color: #6c757d; }
+    .timeline-meta { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-top: 14px; }
+    .timeline-meta-item { text-align: center; padding: 10px; background: #f8f9fa; border-radius: 8px; }
+    .timeline-meta-item .label { font-size: 0.78rem; color: #6c757d; margin-bottom: 4px; }
+    .timeline-meta-item .value { font-size: 1.1rem; font-weight: 700; }
+    .timeline-meta-item .value.blue { color: #007bff; }
+    .timeline-meta-item .value.orange { color: #fd7e14; }
+    .timeline-meta-item .value.red { color: #dc3545; }
+    .prepare-detail { margin-top: 12px; padding: 12px 14px; background: #fff8e1; border-left: 4px solid #ffc107; border-radius: 0 6px 6px 0; font-size: 0.85rem; color: #495057; line-height: 1.7; }
+    .signal-checklist { list-style: none; padding: 0; margin: 8px 0 0; }
+    .signal-checklist li { padding: 2px 0; font-size: 0.83rem; }
+    .signal-checklist li::before { content: '▸ '; color: #fd7e14; font-weight: 700; }
+
+    /* 추천 카드 */
+    .rec-card { border: none; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 14px; overflow: hidden; }
+    .rec-card .card-header { padding: 10px 14px; }
+    .rec-card .sector-name { font-weight: 700; font-size: 1rem; }
+    .rec-card .sector-reason { font-size: 0.8rem; color: #495057; margin-top: 2px; }
+    .stock-row { display: flex; align-items: flex-start; padding: 8px 14px; border-bottom: 1px solid #f1f3f5; }
+    .stock-row:last-child { border-bottom: none; }
+    .stock-rank { flex: 0 0 28px; height: 28px; border-radius: 50%; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.82rem; margin-right: 10px; margin-top: 2px; }
+    .stock-name { font-weight: 600; font-size: 0.9rem; }
+    .stock-code { font-size: 0.75rem; color: #6c757d; margin-left: 4px; }
+    .stock-reason { font-size: 0.8rem; color: #495057; margin-top: 2px; }
+    .buy-card .card-header { background: #e7f5ff; border-bottom: 2px solid #007bff; }
+    .buy-card .sector-name { color: #0056b3; }
+    .buy-card .stock-rank { background: #007bff; }
+    .buy-card .stock-rank.r2 { background: #17a2b8; }
+    .sell-card .card-header { background: #fce4ec; border-bottom: 2px solid #dc3545; }
+    .sell-card .sector-name { color: #dc3545; }
+    .sell-card .stock-rank { background: #dc3545; }
+    .sell-card .stock-rank.r2 { background: #e57373; }
+    .next-buy-card .card-header { background: #e8f5e9; border-bottom: 2px solid #28a745; }
+    .next-buy-card .sector-name { color: #1b5e20; }
+    .next-buy-card .stock-rank { background: #28a745; }
+    .next-buy-card .stock-rank.r2 { background: #66bb6a; }
+    .next-sell-card .card-header { background: #fff3e0; border-bottom: 2px solid #fd7e14; }
+    .next-sell-card .sector-name { color: #e65100; }
+    .next-sell-card .stock-rank { background: #fd7e14; }
+    .next-sell-card .stock-rank.r2 { background: #ffa726; }
+
+    /* 탭 */
+    .mc-tabs { border-bottom: 2px solid #dee2e6; margin-bottom: 20px; display: flex; gap: 0; }
+    .mc-tab-btn { background: none; border: none; border-bottom: 3px solid transparent; padding: 10px 20px; font-size: 0.95rem; font-weight: 600; color: #6c757d; cursor: pointer; margin-bottom: -2px; transition: all 0.2s; }
+    .mc-tab-btn:hover { color: #495057; background: #f8f9fa; }
+    .mc-tab-btn.active { color: #007bff; border-bottom-color: #007bff; }
+    .mc-tab-panel { display: none; }
+    .mc-tab-panel.active { display: block; }
+
+    .section-label { font-size: 0.85rem; font-weight: 700; padding: 4px 10px; border-radius: 4px; display: inline-block; margin-bottom: 10px; }
+
+    /* 업종 테이블 */
+    .sector-table { font-size: 0.85rem; }
+    .sector-table th { background: #f1f3f5; font-weight: 600; vertical-align: middle; }
+    .sector-table td { vertical-align: middle; }
+    .prob-bar { height: 18px; border-radius: 3px; display: inline-block; min-width: 4px; }
+    .prob-buy { background: #007bff; }
+    .prob-sell { background: #dc3545; }
+    .prob-cell { white-space: nowrap; }
+    .signal-badge { font-size: 0.75rem; font-weight: 700; padding: 2px 8px; border-radius: 10px; color: #fff; }
+    .signal-BUY { background: #007bff; }
+    .signal-SELL { background: #dc3545; }
+    .signal-HOLD { background: #6c757d; }
+
+    /* 지표 테이블 */
+    .indicator-table { font-size: 0.88rem; }
+    .indicator-table th { background: #f1f3f5; font-weight: 600; }
+    .trend-up { color: #dc3545; font-weight: 600; }
+    .trend-down { color: #007bff; font-weight: 600; }
+    .trend-flat { color: #6c757d; }
+    .signal-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 4px; }
+    .signal-positive { background: #28a745; }
+    .signal-negative { background: #dc3545; }
+    .signal-neutral { background: #ffc107; }
+
+    /* 계좌별 리밸런싱 */
+    .rebalance-account { margin-bottom: 28px; }
+    .rebalance-account-header { padding: 10px 16px; background: #f8f9fa; border-left: 4px solid #343a40; border-radius: 4px 4px 0 0; display: flex; align-items: center; gap: 10px; }
+    .rebalance-account-name { font-size: 1rem; font-weight: 700; }
+    .rebalance-summary { font-size: 0.83rem; padding: 8px 14px; background: #fff8e1; border-left: 4px solid #ffc107; color: #495057; margin-bottom: 8px; }
+    .rebalance-table { font-size: 0.85rem; }
+    .rebalance-table th { background: #f1f3f5; font-weight: 600; vertical-align: middle; }
+    .rebalance-table td { vertical-align: middle; }
+    .diff-BUY { color: #dc3545; font-weight: 700; }
+    .diff-SELL { color: #007bff; font-weight: 700; }
+    .diff-HOLD { color: #6c757d; }
+
+    @media (max-width: 768px) {
+        .cycle-wrapper { flex-direction: column; }
+        .cycle-diagram { flex: none; width: 100%; max-width: 340px; margin: 0 auto; }
+        .theory-grid { grid-template-columns: 1fr; }
+        .timeline-meta { grid-template-columns: 1fr; }
+    }
+</style>
+
+<div class="container-fluid mt-3 mb-5">
+
+    <!-- 헤더 -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h3 class="mc-title">우라가미 구니오 증시 사계론 대시보드</h3>
+            <span class="mc-date" th:text="'진단일: ' + ${dashboard.diagnosisDate}"></span>
+        </div>
+    </div>
+
+    <!-- ===== 1. 현재 사이클 위치 ===== -->
+    <div class="mc-section">
+        <div class="mc-section-title">현재 사이클 위치</div>
+        <div class="cycle-wrapper">
+            <div class="cycle-diagram">
+                <svg class="cycle-svg" viewBox="0 0 340 340" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="170" cy="170" r="140" fill="none" stroke="#e9ecef" stroke-width="2"/>
+                    <path d="M170,30 A140,140 0 0,1 310,170" fill="none" stroke="#007bff" stroke-width="18" stroke-linecap="round" opacity="0.25"/>
+                    <path d="M310,170 A140,140 0 0,1 170,310" fill="none" stroke="#28a745" stroke-width="18" stroke-linecap="round" opacity="0.25"/>
+                    <path d="M170,310 A140,140 0 0,1 30,170" fill="none" stroke="#fd7e14" stroke-width="18" stroke-linecap="round" opacity="0.25"/>
+                    <path d="M30,170 A140,140 0 0,1 170,30" fill="none" stroke="#dc3545" stroke-width="18" stroke-linecap="round" opacity="0.25"/>
+                    <path id="activeArc" d="" fill="none" stroke-width="18" stroke-linecap="round"/>
+                    <circle id="posMarker" r="10" fill="#007bff" stroke="#fff" stroke-width="3"/>
+                    <text x="240" y="90" text-anchor="middle" font-size="13" font-weight="700" fill="#007bff">금융장세</text>
+                    <text x="248" y="106" text-anchor="middle" font-size="9" fill="#6c757d">금리↓ 유동성↑</text>
+                    <text x="250" y="256" text-anchor="middle" font-size="13" font-weight="700" fill="#28a745">실적장세</text>
+                    <text x="250" y="272" text-anchor="middle" font-size="9" fill="#6c757d">실적↑ 경기↑</text>
+                    <text x="92" y="256" text-anchor="middle" font-size="13" font-weight="700" fill="#fd7e14">역금융장세</text>
+                    <text x="92" y="272" text-anchor="middle" font-size="9" fill="#6c757d">금리↑ 긴축</text>
+                    <text x="100" y="90" text-anchor="middle" font-size="13" font-weight="700" fill="#dc3545">역실적장세</text>
+                    <text x="100" y="106" text-anchor="middle" font-size="9" fill="#6c757d">실적↓ 침체</text>
+                    <text x="170" y="160" text-anchor="middle" font-size="12" fill="#6c757d">현재 국면</text>
+                    <text x="170" y="182" text-anchor="middle" font-size="17" font-weight="700"
+                          th:text="${dashboard.currentPhase.label}" th:style="'fill:' + ${dashboard.currentPhase.color}"></text>
+                    <text x="170" y="200" text-anchor="middle" font-size="11" fill="#6c757d"
+                          th:text="'진행도 ' + ${dashboard.progressPercent} + '%'"></text>
+                    <path d="M260,52 L268,42 L254,46" fill="#adb5bd"/>
+                    <path d="M288,260 L296,268 L288,254" fill="#adb5bd"/>
+                    <path d="M80,288 L72,296 L86,292" fill="#adb5bd"/>
+                    <path d="M52,80 L44,72 L48,86" fill="#adb5bd"/>
+                </svg>
+            </div>
+            <div class="cycle-info">
+                <span class="phase-badge" th:style="'background:' + ${dashboard.currentPhase.color}"
+                      th:text="${dashboard.currentPhase.label}"></span>
+                <span style="font-size:0.9rem; color:#6c757d; margin-left:8px;"
+                      th:text="'(진행도 ' + ${dashboard.progressPercent} + '%)'"></span>
+                <div class="phase-desc" th:text="${dashboard.diagnosisSummary}"></div>
+                <div class="phase-next">
+                    <strong>전환 전망:</strong> <span th:text="${dashboard.nextPhaseOutlook}"></span>
+                </div>
+                <div class="theory-grid mt-3">
+                    <div th:each="p : ${allPhases}" class="theory-card"
+                         th:classappend="${p == dashboard.currentPhase} ? ' active-phase' : ''"
+                         th:style="'border-color:' + ${p.color} + '; background:' + ${p.color} + '10'">
+                        <h6 th:style="'color:' + ${p.color}" th:text="${p.label}"></h6>
+                        <p th:text="${p.description}"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== 2. 사이클 잔여기간 타임라인 ===== -->
+    <div class="mc-section">
+        <div class="mc-section-title">사이클 잔여 기간 &amp; 전환 준비</div>
+        <div class="timeline-box">
+            <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+                <span class="phase-badge phase-badge-sm" th:style="'background:' + ${dashboard.currentPhase.color}"
+                      th:text="${dashboard.currentPhase.label}"></span>
+                <span style="font-size:0.9rem; color:#495057;">
+                    <span th:text="${dashboard.cycleStartDate}"></span> 시작
+                    → 예상 종료: <strong th:text="${dashboard.estimatedEndDate}"></strong>
+                </span>
+            </div>
+
+            <!-- 프로그레스 바 -->
+            <div class="timeline-bar-wrap">
+                <div class="timeline-bar-fill" th:style="'width:' + ${dashboard.progressPercent} + '%; background: linear-gradient(90deg, ' + ${dashboard.currentPhase.color} + ', ' + ${dashboard.currentPhase.color} + 'cc);'">
+                    <span th:text="${dashboard.progressPercent} + '%'"></span>
+                </div>
+                <!-- 준비 시작 구간 (전환 3개월 전) -->
+                <div class="timeline-bar-prepare"
+                     th:style="'left:' + (100 - ${dashboard.prepareMonths} * 100 / ${dashboard.remainingMonths + dashboard.progressPercent * (dashboard.remainingMonths + dashboard.prepareMonths) / (100 - dashboard.progressPercent) }) + '%; right:0; background-color: rgba(253,126,20,0.5);'"
+                     style="left:75%; right:0; background-color: rgba(253,126,20,0.5);">
+                    준비 구간
+                </div>
+            </div>
+            <div class="timeline-labels">
+                <span th:text="${dashboard.cycleStartDate}"></span>
+                <span style="color:#fd7e14; font-weight:600;">← 전환 준비 시작</span>
+                <span th:text="${dashboard.estimatedEndDate}"></span>
+            </div>
+
+            <!-- 핵심 수치 3칸 -->
+            <div class="timeline-meta">
+                <div class="timeline-meta-item">
+                    <div class="label">경과 기간</div>
+                    <div class="value blue" th:text="${dashboard.progressPercent} + '%  (~8개월)'">65% (~8개월)</div>
+                </div>
+                <div class="timeline-meta-item">
+                    <div class="label">잔여 기간 (예상)</div>
+                    <div class="value orange" th:text="'약 ' + ${dashboard.remainingMonths} + '개월'">약 6~9개월</div>
+                </div>
+                <div class="timeline-meta-item">
+                    <div class="label">전환 준비 시작까지</div>
+                    <div class="value red" th:text="'약 ' + ${dashboard.prepareMonths} + '개월 후'">약 3개월 후</div>
+                </div>
+            </div>
+
+            <!-- 상세 코멘트 -->
+            <div class="prepare-detail">
+                <strong>사이클 지속 전망:</strong>
+                <span th:text="${dashboard.durationComment}"></span>
+            </div>
+            <div class="prepare-detail" style="border-left-color:#fd7e14; background:#fff3e0; margin-top:8px;">
+                <strong>전환 준비 가이드:</strong>
+                <span th:text="${dashboard.prepareComment}"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== 3. 탭 (순수 JS) ===== -->
+    <div class="mc-tabs">
+        <button class="mc-tab-btn active" onclick="switchTab('tabCurrent', this)">현재 국면 추천</button>
+        <button class="mc-tab-btn" onclick="switchTab('tabNext', this)">다음 국면 대비</button>
+        <button class="mc-tab-btn" onclick="switchTab('tabSectorAll', this)">업종별 매수/매도 확률</button>
+        <button class="mc-tab-btn" onclick="switchTab('tabAsset', this)">자산별 매수/매도 확률</button>
+        <button class="mc-tab-btn" onclick="switchTab('tabRebalance', this)">계좌별 리밸런싱</button>
+    </div>
+
+    <!-- 탭1: 현재 국면 -->
+    <div class="mc-tab-panel active" id="tabCurrent">
+        <span class="section-label" style="background:#e7f5ff; color:#0056b3;">현재 매수 추천 업종 TOP 2</span>
+        <div class="row">
+            <div class="col-md-6" th:each="rec : ${dashboard.buyRecommendations}">
+                <div class="card rec-card buy-card">
+                    <div class="card-header">
+                        <div class="sector-name" th:text="${rec.sector}"></div>
+                        <div class="sector-reason" th:text="${rec.reason}"></div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="stock-row">
+                            <div class="stock-rank">1</div>
+                            <div>
+                                <span class="stock-name" th:text="${rec.stock1}"></span>
+                                <span class="stock-code" th:text="'(' + ${rec.stock1Code} + ')'"></span>
+                                <div class="stock-reason" th:text="${rec.stock1Reason}"></div>
+                            </div>
+                        </div>
+                        <div class="stock-row">
+                            <div class="stock-rank r2">2</div>
+                            <div>
+                                <span class="stock-name" th:text="${rec.stock2}"></span>
+                                <span class="stock-code" th:text="'(' + ${rec.stock2Code} + ')'"></span>
+                                <div class="stock-reason" th:text="${rec.stock2Reason}"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <span class="section-label mt-2" style="background:#fce4ec; color:#dc3545;">현재 매도(비중축소) 업종 TOP 2</span>
+        <div class="row">
+            <div class="col-md-6" th:each="rec : ${dashboard.sellRecommendations}">
+                <div class="card rec-card sell-card">
+                    <div class="card-header">
+                        <div class="sector-name" th:text="${rec.sector}"></div>
+                        <div class="sector-reason" th:text="${rec.reason}"></div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="stock-row">
+                            <div class="stock-rank">1</div>
+                            <div>
+                                <span class="stock-name" th:text="${rec.stock1}"></span>
+                                <span class="stock-code" th:text="'(' + ${rec.stock1Code} + ')'"></span>
+                                <div class="stock-reason" th:text="${rec.stock1Reason}"></div>
+                            </div>
+                        </div>
+                        <div class="stock-row">
+                            <div class="stock-rank r2">2</div>
+                            <div>
+                                <span class="stock-name" th:text="${rec.stock2}"></span>
+                                <span class="stock-code" th:text="'(' + ${rec.stock2Code} + ')'"></span>
+                                <div class="stock-reason" th:text="${rec.stock2Reason}"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 탭2: 다음 국면 -->
+    <div class="mc-tab-panel" id="tabNext">
+        <div class="mb-3">
+            <span class="phase-badge phase-badge-sm" th:style="'background:' + ${dashboard.nextPhase.color}"
+                  th:text="'다음 국면: ' + ${dashboard.nextPhase.label}"></span>
+            <span style="font-size:0.85rem; color:#6c757d; margin-left:8px;"
+                  th:text="${dashboard.nextPhase.description}"></span>
+        </div>
+        <span class="section-label" style="background:#e8f5e9; color:#1b5e20;">다음 국면 매수 준비 업종 TOP 2</span>
+        <div class="row">
+            <div class="col-md-6" th:each="rec : ${dashboard.nextBuyRecommendations}">
+                <div class="card rec-card next-buy-card">
+                    <div class="card-header">
+                        <div class="sector-name" th:text="${rec.sector}"></div>
+                        <div class="sector-reason" th:text="${rec.reason}"></div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="stock-row">
+                            <div class="stock-rank">1</div>
+                            <div>
+                                <span class="stock-name" th:text="${rec.stock1}"></span>
+                                <span class="stock-code" th:text="'(' + ${rec.stock1Code} + ')'"></span>
+                                <div class="stock-reason" th:text="${rec.stock1Reason}"></div>
+                            </div>
+                        </div>
+                        <div class="stock-row">
+                            <div class="stock-rank r2">2</div>
+                            <div>
+                                <span class="stock-name" th:text="${rec.stock2}"></span>
+                                <span class="stock-code" th:text="'(' + ${rec.stock2Code} + ')'"></span>
+                                <div class="stock-reason" th:text="${rec.stock2Reason}"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <span class="section-label mt-2" style="background:#fff3e0; color:#e65100;">다음 국면 매도 대비 업종 TOP 2</span>
+        <div class="row">
+            <div class="col-md-6" th:each="rec : ${dashboard.nextSellRecommendations}">
+                <div class="card rec-card next-sell-card">
+                    <div class="card-header">
+                        <div class="sector-name" th:text="${rec.sector}"></div>
+                        <div class="sector-reason" th:text="${rec.reason}"></div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="stock-row">
+                            <div class="stock-rank">1</div>
+                            <div>
+                                <span class="stock-name" th:text="${rec.stock1}"></span>
+                                <span class="stock-code" th:text="'(' + ${rec.stock1Code} + ')'"></span>
+                                <div class="stock-reason" th:text="${rec.stock1Reason}"></div>
+                            </div>
+                        </div>
+                        <div class="stock-row">
+                            <div class="stock-rank r2">2</div>
+                            <div>
+                                <span class="stock-name" th:text="${rec.stock2}"></span>
+                                <span class="stock-code" th:text="'(' + ${rec.stock2Code} + ')'"></span>
+                                <div class="stock-reason" th:text="${rec.stock2Reason}"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 탭3: 업종별 확률 -->
+    <div class="mc-tab-panel" id="tabSectorAll">
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover sector-table mb-0">
+                <thead>
+                <tr>
+                    <th style="width:3%">#</th>
+                    <th style="width:10%">업종</th>
+                    <th style="width:6%">시그널</th>
+                    <th style="width:6%">매수%</th>
+                    <th style="width:13%"></th>
+                    <th style="width:6%">매도%</th>
+                    <th style="width:13%"></th>
+                    <th style="width:10%">대장주 1위</th>
+                    <th style="width:10%">대장주 2위</th>
+                    <th>사유</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="s, stat : ${dashboard.sectorOverviews}">
+                    <td class="text-center" th:text="${stat.count}"></td>
+                    <td style="font-weight:600;" th:text="${s.sector}"></td>
+                    <td class="text-center">
+                        <span class="signal-badge" th:classappend="'signal-' + ${s.signal}" th:text="${s.signal}"></span>
+                    </td>
+                    <td class="text-center prob-cell">
+                        <strong th:text="${s.buyProbability} + '%'" th:style="${s.buyProbability >= 60} ? 'color:#007bff' : ''"></strong>
+                    </td>
+                    <td>
+                        <div style="background:#e9ecef; border-radius:3px; height:18px; width:100%;">
+                            <div class="prob-bar prob-buy" th:style="'width:' + ${s.buyProbability} + '%'"></div>
+                        </div>
+                    </td>
+                    <td class="text-center prob-cell">
+                        <strong th:text="${s.sellProbability} + '%'" th:style="${s.sellProbability >= 50} ? 'color:#dc3545' : ''"></strong>
+                    </td>
+                    <td>
+                        <div style="background:#e9ecef; border-radius:3px; height:18px; width:100%;">
+                            <div class="prob-bar prob-sell" th:style="'width:' + ${s.sellProbability} + '%'"></div>
+                        </div>
+                    </td>
+                    <td>
+                        <span th:text="${s.stock1}" style="font-weight:600;"></span>
+                        <span th:text="'(' + ${s.stock1Code} + ')'" style="font-size:0.72rem; color:#6c757d;"></span>
+                    </td>
+                    <td>
+                        <span th:text="${s.stock2}" style="font-weight:600;"></span>
+                        <span th:text="'(' + ${s.stock2Code} + ')'" style="font-size:0.72rem; color:#6c757d;"></span>
+                    </td>
+                    <td style="font-size:0.8rem; color:#495057;" th:text="${s.reason}"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 탭4: 자산별 확률 -->
+    <div class="mc-tab-panel" id="tabAsset">
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover sector-table mb-0">
+                <thead>
+                <tr>
+                    <th rowspan="2" style="width:3%; vertical-align:middle;">#</th>
+                    <th rowspan="2" style="width:10%; vertical-align:middle;">자산</th>
+                    <th rowspan="2" style="width:5%; vertical-align:middle;">시그널</th>
+                    <th colspan="2" style="text-align:center; background:#e7f5ff;">현재</th>
+                    <th colspan="2" style="text-align:center; background:#e8f5e9;">3개월 후</th>
+                    <th colspan="2" style="text-align:center; background:#fff3e0;">6개월 후</th>
+                    <th rowspan="2" style="width:13%; vertical-align:middle;">대표 ETF</th>
+                    <th rowspan="2" style="vertical-align:middle;">사유</th>
+                </tr>
+                <tr>
+                    <th style="width:5%; background:#e7f5ff; text-align:center; font-size:0.75rem;">매수</th>
+                    <th style="width:5%; background:#e7f5ff; text-align:center; font-size:0.75rem;">매도</th>
+                    <th style="width:5%; background:#e8f5e9; text-align:center; font-size:0.75rem;">매수</th>
+                    <th style="width:5%; background:#e8f5e9; text-align:center; font-size:0.75rem;">매도</th>
+                    <th style="width:5%; background:#fff3e0; text-align:center; font-size:0.75rem;">매수</th>
+                    <th style="width:5%; background:#fff3e0; text-align:center; font-size:0.75rem;">매도</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="a, stat : ${dashboard.assetOverviews}">
+                    <td class="text-center" th:text="${stat.count}"></td>
+                    <td style="font-weight:600;" th:text="${a.sector}"></td>
+                    <td class="text-center">
+                        <span class="signal-badge" th:classappend="'signal-' + ${a.signal}" th:text="${a.signal}"></span>
+                    </td>
+                    <td class="text-center" th:style="${a.buyProbability >= 60} ? 'color:#007bff; font-weight:700' : ''">
+                        <span th:text="${a.buyProbability} + '%'"></span>
+                    </td>
+                    <td class="text-center" th:style="${a.sellProbability >= 50} ? 'color:#dc3545; font-weight:700' : ''">
+                        <span th:text="${a.sellProbability} + '%'"></span>
+                    </td>
+                    <td class="text-center" th:style="${a.buyProbability3m >= 60} ? 'color:#007bff; font-weight:700' : ''">
+                        <span th:text="${a.buyProbability3m} + '%'"></span>
+                        <span th:if="${a.buyProbability3m > a.buyProbability}" style="color:#dc3545; font-size:0.7rem;">&#9650;</span>
+                        <span th:if="${a.buyProbability3m < a.buyProbability}" style="color:#007bff; font-size:0.7rem;">&#9660;</span>
+                    </td>
+                    <td class="text-center" th:style="${a.sellProbability3m >= 50} ? 'color:#dc3545; font-weight:700' : ''">
+                        <span th:text="${a.sellProbability3m} + '%'"></span>
+                    </td>
+                    <td class="text-center" th:style="${a.buyProbability6m >= 60} ? 'color:#007bff; font-weight:700' : ''">
+                        <span th:text="${a.buyProbability6m} + '%'"></span>
+                        <span th:if="${a.buyProbability6m > a.buyProbability}" style="color:#dc3545; font-size:0.7rem;">&#9650;</span>
+                        <span th:if="${a.buyProbability6m < a.buyProbability}" style="color:#007bff; font-size:0.7rem;">&#9660;</span>
+                    </td>
+                    <td class="text-center" th:style="${a.sellProbability6m >= 50} ? 'color:#dc3545; font-weight:700' : ''">
+                        <span th:text="${a.sellProbability6m} + '%'"></span>
+                    </td>
+                    <td style="font-size:0.78rem;">
+                        <div><span th:text="${a.stock1}" style="font-weight:600;"></span><span th:text="'(' + ${a.stock1Code} + ')'" style="color:#6c757d; font-size:0.7rem;"></span></div>
+                        <div><span th:text="${a.stock2}" style="font-weight:600;"></span><span th:text="'(' + ${a.stock2Code} + ')'" style="color:#6c757d; font-size:0.7rem;"></span></div>
+                    </td>
+                    <td style="font-size:0.8rem; color:#495057;" th:text="${a.reason}"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 탭5: 계좌별 리밸런싱 -->
+    <div class="mc-tab-panel" id="tabRebalance">
+        <div class="rebalance-account" th:each="account : ${dashboard.accountRebalances}">
+            <div class="rebalance-account-header">
+                <span class="rebalance-account-name" th:text="${account.accountName}"></span>
+                <span class="badge badge-secondary" style="font-size:0.78rem;" th:text="${account.accountType}"></span>
+            </div>
+            <div class="rebalance-summary" th:text="${account.rebalanceSummary}"></div>
+            <div class="table-responsive">
+                <table class="table table-bordered table-sm rebalance-table mb-4">
+                    <thead>
+                    <tr>
+                        <th style="width:16%">종목명</th>
+                        <th style="width:8%">코드</th>
+                        <th style="width:10%">분류</th>
+                        <th style="width:13%; text-align:center;">현재 비중</th>
+                        <th style="width:10%; text-align:center;">목표 비중</th>
+                        <th style="width:8%; text-align:center;">변화</th>
+                        <th style="width:7%; text-align:center;">액션</th>
+                        <th>리밸런싱 사유</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="h : ${account.holdings}">
+                        <td style="font-weight:600;" th:text="${h.name}"></td>
+                        <td style="font-size:0.78rem; color:#6c757d;" th:text="${h.code}"></td>
+                        <td th:text="${h.category}"></td>
+                        <td>
+                            <div style="display:flex; align-items:center; gap:6px; justify-content:center;">
+                                <div style="width:50px; background:#e9ecef; border-radius:3px; height:8px; flex-shrink:0;">
+                                    <div th:style="|height:8px;background:#adb5bd;border-radius:3px;width:${h.currentWeight * 100 / 60}%;|"></div>
+                                </div>
+                                <span style="font-size:0.88rem; font-weight:600;" th:text="${h.currentWeight} + '%'"></span>
+                            </div>
+                        </td>
+                        <td class="text-center">
+                            <span style="font-size:0.88rem;" th:class="'diff-' + ${h.action}"
+                                  th:text="${h.targetWeight} + '%'"></span>
+                        </td>
+                        <td class="text-center">
+                            <span style="font-size:0.88rem;" th:class="'diff-' + ${h.action}"
+                                  th:text="${h.weightDiffStr}"></span>
+                        </td>
+                        <td class="text-center">
+                            <span class="signal-badge" th:classappend="'signal-' + ${h.action}"
+                                  th:text="${h.action}"></span>
+                        </td>
+                        <td style="font-size:0.8rem; color:#495057;" th:text="${h.reason}"></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== 4. 핵심 지표 ===== -->
+    <div class="mc-section mt-4">
+        <div class="mc-section-title">사이클 판단 핵심 지표</div>
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover indicator-table mb-0">
+                <thead>
+                <tr>
+                    <th style="width:14%">지표</th>
+                    <th style="width:12%">현재값</th>
+                    <th style="width:8%">추세</th>
+                    <th style="width:8%">시그널</th>
+                    <th>해석</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="ind : ${dashboard.indicators}">
+                    <td th:text="${ind.name}" style="font-weight:600;"></td>
+                    <td th:text="${ind.value}"></td>
+                    <td>
+                        <span th:if="${ind.trend == 'UP'}" class="trend-up">&#9650; 상승</span>
+                        <span th:if="${ind.trend == 'DOWN'}" class="trend-down">&#9660; 하락</span>
+                        <span th:if="${ind.trend == 'FLAT'}" class="trend-flat">&#9654; 보합</span>
+                    </td>
+                    <td>
+                        <span class="signal-dot" th:classappend="'signal-' + ${ind.signal.toLowerCase()}"></span>
+                        <span th:if="${ind.signal == 'POSITIVE'}">긍정</span>
+                        <span th:if="${ind.signal == 'NEGATIVE'}">부정</span>
+                        <span th:if="${ind.signal == 'NEUTRAL'}">중립</span>
+                    </td>
+                    <td th:text="${ind.description}" style="font-size:0.82rem; color:#495057;"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="text-muted text-center mb-3" style="font-size:0.75rem;">
+        본 대시보드는 우라가미 구니오의 증시 사계론을 기반으로 한 참고용 분석이며, 투자 판단의 최종 책임은 투자자 본인에게 있습니다.
+    </div>
+</div>
+
+<script th:inline="javascript">
+(function() {
+    // SVG 사이클 위치 계산
+    var phaseIndex = /*[[${dashboard.currentPhase.ordinal()}]]*/ 0;
+    var progress = /*[[${dashboard.progressPercent}]]*/ 65;
+    var color = /*[[${dashboard.currentPhase.color}]]*/ '#007bff';
+    var cx = 170, cy = 170, r = 140;
+    var phaseStartAngle = phaseIndex * 90 - 90;
+    var currentAngle = phaseStartAngle + (progress / 100) * 90;
+    function toRad(deg) { return deg * Math.PI / 180; }
+    var startA = toRad(phaseStartAngle), endA = toRad(currentAngle);
+    var sx = cx + r * Math.cos(startA), sy = cy + r * Math.sin(startA);
+    var ex = cx + r * Math.cos(endA), ey = cy + r * Math.sin(endA);
+    var largeArc = (currentAngle - phaseStartAngle) > 180 ? 1 : 0;
+    document.getElementById('activeArc').setAttribute('d', 'M'+sx+','+sy+' A'+r+','+r+' 0 '+largeArc+',1 '+ex+','+ey);
+    document.getElementById('activeArc').setAttribute('stroke', color);
+    document.getElementById('posMarker').setAttribute('cx', ex);
+    document.getElementById('posMarker').setAttribute('cy', ey);
+    document.getElementById('posMarker').setAttribute('fill', color);
+})();
+
+// 탭 전환 (Bootstrap 의존 없이 순수 JS)
+function switchTab(tabId, btn) {
+    // 버튼 활성화
+    var btns = document.querySelectorAll('.mc-tab-btn');
+    for (var i = 0; i < btns.length; i++) btns[i].classList.remove('active');
+    btn.classList.add('active');
+    // 패널 전환
+    var panels = document.querySelectorAll('.mc-tab-panel');
+    for (var i = 0; i < panels.length; i++) panels[i].classList.remove('active');
+    document.getElementById(tabId).classList.add('active');
+}
+</script>
+
+</th:block>
+</th:block>
+</html>

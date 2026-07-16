@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+	<meta charset="UTF-8">
+	<TITLE>Ex2</TITLE>
+</head>
+<body>
+
+	<ul>
+		<li th:each="dto,state : ${list}" >
+			<span th:if="${dto.sno % 5 == 0}" th:text="${'------------'+dto.sno}"></span>
+			<span th:unless="${dto.sno % 5 == 0}" th:text="${dto.first}"></span>
+			[[${state.index}]] ----- [[${dto}]]
+		</li>
+	</ul>
+</body>
+</html>

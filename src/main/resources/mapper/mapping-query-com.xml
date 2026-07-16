@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kangong.com">
+
+	<select id="idGen" resultType="String">
+	   SELECT get_seq(#{tableName});
+	</select>
+
+    <select id="selectMessage" resultType="com.kangong.common.model.MessageVo">
+        SELECT ID, CREATE_DATE createDate, CREATE_USER createUser, UPDATE_DATE updateDate, UPDATE_USER updateUser,
+        	DELETE_YN deleteYn, MESSAGE_CODE messageCode, LABLE_KO lableKo, LABLE_EN lableEn
+		FROM seckimdb.st_com_message M
+		WHERE M.MESSAGE_CODE = #{messageCode}
+    </select>
+
+    <select id="selectColumn" resultType="java.util.HashMap">
+         SELECT COLUMN_NAME, DATA_TYPE, COLUMN_COMMENT
+		 FROM   information_schema.columns
+		 WHERE  table_name =  #{tableName}
+		 ORDER BY ORDINAL_POSITION
+   </select>
+
+    <!--
+    <insert id="insertUser">
+        INSERT INTO OT_COM_USER (FIRST_NAME, LAST_NAME, USER_ID, PASSWORD, SEX, CITY) VALUES (#{firstName}, #{lastName}, #{userId}, #{password}, #{sex}, #{city})
+    </insert>
+
+     <select id="selectUsername" resultType="secretary.common.user.model.CustomUserDetails">
+        SELECT FIRST_NAME firstName, LAST_NAME lastName, USER_ID userId, PASSWORD password, SEX sex, CITY city, 'ROLE_USER' authority
+        FROM OT_COM_USER U
+        WHERE U.USER_ID = #{userId}
+    </select>
+    -->
+
+</mapper>

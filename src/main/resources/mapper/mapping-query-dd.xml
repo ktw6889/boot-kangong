@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kangong.dd">
+
+	   <select id="list" parameterType="com.kangong.common.dd.model.ComDdVO" resultType="com.kangong.common.dd.model.ComDdVO">
+         SELECT  ID id, CREATE_DATE createDate, CREATE_USER createUser, UPDATE_DATE updateDate, UPDATE_USER updateUser, DELETE_YN deleteYn,
+         	DD_CODE ddCode, DD_NAME ddName, DD_DESC ddDesc, DD_MODULE ddModule
+ 		  FROM ST_COM_DD  b
+		<where>
+			AND b.DELETE_YN = 'N'
+	        <if test="id != null and id !=''">
+	        	AND b.ID = #{id}
+	        </if>
+	         <if test="ddName != null and ddName !=''">
+	        	AND b.DD_NAME like CONCAT('%',#{ddName},'%')
+
+	        </if>
+	        <if test="ddDesc != null and ddDesc !=''">
+	        	AND b.DD_DESC like CONCAT('%',#{ddDesc},'%')
+	        </if>
+		</where>
+		LIMIT #{startList}, #{listSize}
+    </select>
+
+    <select id="listCnt" parameterType="com.kangong.common.dd.model.ComDdVO" resultType="int">
+		SELECT
+			count(*) as listCnt
+		FROM ST_COM_DD b
+		<where>
+	        <if test="id != null and id !=''">
+	        	AND b.ID = #{id}
+	        </if>
+	        <if test="ddName != null and ddName !=''">
+	        	AND b.DD_NAME like CONCAT('%',#{ddName},'%')
+
+	        </if>
+	        <if test="ddDesc != null and ddDesc !=''">
+	        	AND b.DD_DESC like CONCAT('%',#{ddDesc},'%')
+	        </if>
+	           AND b.DELETE_YN = 'N'
+		</where>
+	</select>
+
+
+    <select id="select" resultType="com.kangong.common.dd.model.ComDdVO">
+        SELECT  ID id, CREATE_DATE createDate, CREATE_USER createUser, UPDATE_DATE updateDate, UPDATE_USER updateUser, DELETE_YN deleteYn,
+         	DD_CODE ddCode, DD_NAME ddName, DD_DESC ddDesc, DD_MODULE ddModule
+ 		  FROM ST_COM_DD  b
+		<where>
+				AND b.DELETE_YN = 'N'
+	        	AND b.ID = #{id}
+		</where>
+    </select>
+
+	 <insert id="insert" parameterType="com.kangong.common.dd.model.ComDdVO">
+        INSERT INTO ST_COM_DD
+		   (ID, CREATE_DATE, CREATE_USER, UPDATE_DATE, UPDATE_USER,  DD_CODE, DD_NAME, DD_DESC, DD_MODULE)
+		 VALUES
+   			( #{id}, now(), #{createUser}, now(), #{updateUser},  #{ddCode}, #{ddName}, #{ddDesc}, #{ddModule})
+    </insert>
+
+    <update id="update" parameterType="com.kangong.common.dd.model.ComDdVO">
+        UPDATE ST_COM_DD
+		 SET   UPDATE_DATE = now(), UPDATE_USER = #{updateUser}, DD_CODE = #{ddCode}, DD_NAME = #{ddName}, DD_DESC = #{ddDesc}, DD_MODULE = #{ddModule}
+		 WHERE ID =#{id}
+    </update>
+
+   <update id="delete" parameterType="com.kangong.common.dd.model.ComDdVO">
+        UPDATE ST_COM_DD
+		SET
+		   UPDATE_DATE = NOW()
+		  ,UPDATE_USER = #{updateUser}
+		  ,DELETE_YN = 'Y'
+		WHERE ID =#{id}
+    </update>
+
+
+	<select id="listItem" resultType="com.kangong.common.dd.model.ComDdValueVO">
+		 SELECT  ID id, CREATE_DATE createDate, CREATE_USER createUser, UPDATE_DATE updateDate, UPDATE_USER updateUser, DELETE_YN deleteYn,
+		 	DD_ID ddId, DD_VAL ddVal, DD_KO ddKo, DD_EN ddEn, DD_DEFAULT ddDefault, USE_YN useYn, DD_ORDER ddOrder, DD_FILTER ddFilter
+ 		FROM ST_COM_DD_VALUE  r
+		<where>
+			AND r.DELETE_YN = 'N'
+	        <if test="id != null and id !=''">
+	        	AND r.DD_ID = #{ddId}
+	        </if>
+		</where>
+		ORDER BY r.create_Date desc
+	</select>
+
+	<insert id="insertItem" parameterType="com.kangong.common.dd.model.ComDdValueVO">
+		INSERT INTO ST_COM_DD_VALUE
+   			(ID, CREATE_DATE, CREATE_USER, UPDATE_DATE, UPDATE_USER, DD_ID, DD_VAL, DD_KO, DD_EN, DD_DEFAULT, USE_YN, DD_ORDER, DD_FILTER)
+		VALUES
+		   ( #{id}, now(), #{createUser}, now(), #{updateUser}, #{ddId}, #{ddVal}, #{ddKo}, #{ddEn}, #{ddDefault}, #{useYn}, #{ddOrder}, #{ddFilter})
+	</insert>
+
+	<update id="updateItem" parameterType="com.kangong.common.dd.model.ComDdValueVO">
+		UPDATE ST_COM_DD_VALUE
+		 SET UPDATE_DATE = now(), UPDATE_USER = #{updateUser}, DD_ID = #{ddId}, DD_VAL = #{ddVal}, DD_KO = #{ddKo}, DD_EN = #{ddEn}, DD_DEFAULT = #{ddDefault}, USE_YN = #{useYn}, DD_ORDER = #{ddOrder}, DD_FILTER = #{ddFilter}
+		 WHERE ID =#{id}
+	</update>
+
+	<update id="deleteItem" parameterType="com.kangong.common.dd.model.ComDdValueVO">
+		UPDATE ST_COM_DD_VALUE
+		SET
+		   UPDATE_DATE = NOW()
+		  ,UPDATE_USER = #{updateUser}
+		  ,DELETE_YN = 'Y'
+		WHERE ID =#{id}
+	</update>
+
+</mapper>

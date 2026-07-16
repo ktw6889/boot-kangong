@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="info" monitorInterval="30">
+    <Properties>
+        <Property name="LOG_FORMAT">%d{yyyy-MM-dd HH:mm:ss} %p %m%n</Property>
+    </Properties>
+
+    <Appenders>
+        <Console name="console" target="SYSTEM_OUT" follow="true">
+            <PatternLayout pattern="${LOG_FORMAT}"/>
+        </Console>
+        <RollingFile name="file"
+                     fileName="./logs/file/test.log"
+                     filePattern="./logs/file/test-%d{yyyy-MM-dd}-%i.log">
+            <PatternLayout pattern="%d %5p [%c] %m%n" />
+            <Policies>
+                <OnStartupTriggeringPolicy />
+                <TimeBasedTriggeringPolicy interval="1" modulate="true" />
+            </Policies>
+            <DefaultRolloverStrategy max="10" />
+        </RollingFile>
+        <RollingFile name="exceptionLog"
+                     fileName="./logs/exception/exception.log"
+                     filePattern="./logs/exception/exception-%d{yyyy-MM-dd}-%i.log">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} %p [%c{1.}] %m%n%ex" />
+            <ThresholdFilter level="WARN" onMatch="ACCEPT" onMismatch="DENY" />
+            <Policies>
+                <OnStartupTriggeringPolicy />
+                <TimeBasedTriggeringPolicy interval="1" modulate="true" />
+            </Policies>
+            <DefaultRolloverStrategy max="10" />
+        </RollingFile>
+        <RollingFile name="dailyUpdateLog"
+                     fileName="./logs/daily-update/daily-update.log"
+                     filePattern="./logs/daily-update/daily-update-%d{yyyy-MM-dd}-%i.log">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} %p [%c{1.}] %m%n%ex" />
+            <Policies>
+                <OnStartupTriggeringPolicy />
+                <TimeBasedTriggeringPolicy interval="1" modulate="true" />
+            </Policies>
+            <DefaultRolloverStrategy max="10" />
+        </RollingFile>
+    </Appenders>
+    
+    
+
+    <Loggers>
+        <Root level="info">
+            <AppenderRef ref="console"/>
+            <AppenderRef ref="file" />
+        </Root>
+        <logger name="com.kangong" level="trace" additivity="false" >
+            <AppenderRef ref="console" />
+            <AppenderRef ref="exceptionLog" />
+        </logger>
+        <logger name="com.kangong.stock.service.StockMobileService" level="info" additivity="false" >
+            <AppenderRef ref="console" />
+            <AppenderRef ref="dailyUpdateLog" />
+            <AppenderRef ref="exceptionLog" />
+        </logger>
+        <logger name="com.kangong.stock.service.StockMobileMarketIndexService" level="info" additivity="false" >
+            <AppenderRef ref="console" />
+            <AppenderRef ref="dailyUpdateLog" />
+            <AppenderRef ref="exceptionLog" />
+        </logger>
+        <logger name="com.kangong.advstock" level="info" additivity="false" >
+            <AppenderRef ref="console" />
+            <AppenderRef ref="dailyUpdateLog" />
+            <AppenderRef ref="exceptionLog" />
+        </logger>
+        <!-- 스프링 프레임워크에서 찍는건 level을 info로 설정 -->
+        <logger name="org.springframework" level="info" additivity="false" >
+            <AppenderRef ref="console" />
+           <!--   <AppenderRef ref="file" /> -->
+        </logger>
+        
+       <logger name="jdbc" level="OFF"/>
+	   <logger name="jdbc.sqlonly" level="OFF"/>
+	   <logger name="jdbc.sqltiming" level="OFF"/>
+	   <logger name="jdbc.audit" level="OFF"/>
+	   <logger name="jdbc.resultset" level="OFF"/>
+	   <logger name="jdbc.resultsettable" level="OFF"/>
+	   <logger name="jdbc.connection" level="OFF"/>
+    </Loggers>
+</Configuration>

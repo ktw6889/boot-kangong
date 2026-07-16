@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="seckim.advstock">
+
+    <!-- ==================== ST_STOCK_MASTER ==================== -->
+
+    <update id="saveFromNaver" parameterType="com.kangong.stock.model.StockVO">
+        INSERT INTO ST_STOCK_MASTER
+            (ID, CREATE_DATE, UPDATE_DATE, DELETE_YN, STOCK_ID, NAME, PRICE,
+             MARKET_CAPITALIZATION, VOLUMN)
+        VALUES
+            (get_seq('ST_STOCK_MASTER'), NOW(), NOW(), 'N', #{stockId}, #{name}, #{price},
+             #{marketCapitalization}, #{volumn})
+        ON DUPLICATE KEY UPDATE
+            UPDATE_DATE = NOW(), DELETE_YN = 'N',
+            NAME = IF(#{name} IS NULL OR #{name} = '', NAME, #{name}),
+            PRICE = IF(#{price} IS NULL OR #{price} = '' OR #{price} = '0', PRICE, #{price}),
+            MARKET_CAPITALIZATION = #{marketCapitalization}, VOLUMN = #{volumn}
+    </update>
+
+    <select id="selectInterestStockIds" resultType="java.lang.String">
+        SELECT DISTINCT STOCK_ID FROM ST_STOCK_INTEREST
+    </select>
+
+    <update id="markDeleted" parameterType="java.util.Map">
+        UPDATE ST_STOCK_MASTER
+        SET DELETE_YN = 'Y', UPDATE_DATE = NOW()
+        WHERE DELETE_YN = 'N'
+          AND STOCK_ID NOT IN
+            <foreach collection="activeStockIds" item="sid" open="(" separator="," close=")">
+                #{sid}
+            </foreach>
+    </update>
+
+    <update id="restoreIfDeleted" parameterType="java.lang.String">
+        UPDATE ST_STOCK_MASTER
+        SET DELETE_YN = 'N', UPDATE_DATE = NOW()
+        WHERE STOCK_ID = #{value} AND DELETE_YN = 'Y'
+    </update>
+
+    <select id="selectList" parameterType="com.kangong.stock.model.StockVO" resultType="com.kangong.stock.model.StockVO">
+        SELECT
+            ID id, CREATE_DATE createDate, UPDATE_DATE updateDate, DELETE_YN deleteYn,
+            STOCK_ID stockId, NAME name, PRICE price, PRICE_BEFOREDAY priceBeforeday,
+            MARKET_CAPITALIZATION marketCapitalization, STOCK_QTY stockQty, VOLUMN volumn,
+            PER per, ROE roe, PBR pbr, DIVIDEND_RATE dividendRate
+        FROM ST_STOCK_MASTER
+        <where>
+            AND DELETE_YN = 'N'
+            <if test="stockId != null and stockId != ''">
+                AND STOCK_ID = #{stockId}
+            </if>
+            <if test="name != null and name != ''">
+                AND NAME LIKE CONCAT('%', #{name}, '%')
+            </if>
+        </where>
+        ORDER BY CAST(REPLACE(MARKET_CAPITALIZATION, ',', '') AS UNSIGNED) DESC
+    </select>
+
+    <!-- ==================== ST_STOCK_DAILY_PRICE ==================== -->
+
+    <update id="saveDailyPrice" parameterType="com.kangong.stock.model.StockDailyPriceVO">
+        INSERT INTO ST_STOCK_DAILY_PRICE
+            (ID, STOCK_ID, TRADING_DATE, CLOSING_PRICE, PREVIOUS_DAY_RATE, FLUCTUATION_RATE, VOLUMN)
+        VALUES
+            (get_seq('ST_STOCK_DAILY_PRICE'), #{stockId}, #{tradingDate}, #{closingPrice}, #{previousDayRate}, #{fluctuationRate}, #{volumn})
+        ON DUPLICATE KEY UPDATE
+            CLOSING_PRICE = #{closingPrice}, PREVIOUS_DAY_RATE = #{previousDayRate},
+            FLUCTUATION_RATE = #{fluctuationRate}, VOLUMN = #{volumn}
+    </update>
+
+    <!-- ==================== ST_STOCK_CATEGORY / LINK ==================== -->
+
+    <update id="saveCategory" parameterType="com.kangong.stock.model.StockCategoryVO">
+        INSERT INTO ST_STOCK_CATEGORY
+            (ID, CATEGORY_TYPE, CATEGORY_NO, CATEGORY_NAME)
+        VALUES
+            (get_seq('ST_STOCK_CATEGORY'), #{categoryType}, #{categoryNo}, #{categoryName})
+        ON DUPLICATE KEY UPDATE
+            CATEGORY_TYPE = #{categoryType}, CATEGORY_NAME = #{categoryName}
+    </update>
+
+    <update id="saveCategoryLink" parameterType="com.kangong.stock.model.StockCategoryLinkVO">
+        INSERT INTO ST_STOCK_CATEGORY_LINK
+            (ID, CATEGORY_NO, STOCK_ID)
+        VALUES
+            (get_seq('ST_STOCK_CATEGORY_LINK'), #{categoryNo}, #{stockId})
+        ON DUPLICATE KEY UPDATE
+            CATEGORY_NO = #{categoryNo}, STOCK_ID = #{stockId}
+    </update>
+
+    <!-- ==================== Yahoo Finance (ST_STOCK_MASTER 공유) ==================== -->
+
+    <update id="saveFromYahoo" parameterType="com.kangong.advstock.model.YahooStockVO">
+        INSERT INTO ST_STOCK_MASTER
+            (ID, CREATE_DATE, UPDATE_DATE, DELETE_YN, STOCK_ID, NAME, PRICE,
+             MARKET_CAPITALIZATION, VOLUMN)
+        VALUES
+            (get_seq('ST_STOCK_MASTER'), NOW(), NOW(), 'N', #{stockId}, #{name}, #{price},
+             #{marketCapitalization}, #{volumn})
+        ON DUPLICATE KEY UPDATE
+            UPDATE_DATE = NOW(), DELETE_YN = 'N',
+            NAME = IF(#{name} IS NULL OR #{name} = '', NAME, #{name}),
+            PRICE = IF(#{price} IS NULL OR #{price} = '' OR #{price} = '0', PRICE, #{price}),
+            MARKET_CAPITALIZATION = #{marketCapitalization}, VOLUMN = #{volumn}
+    </update>
+
+</mapper>

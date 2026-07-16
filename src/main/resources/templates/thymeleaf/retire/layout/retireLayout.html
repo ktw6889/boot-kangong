@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+
+<th:block th:fragment="setContent(content)">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>노후자산 시뮬레이터</title>
+    <link th:href="@{/webjars/bootstrap/4.6.2/css/bootstrap.css}" rel="stylesheet">
+    <script th:src="@{/webjars/jquery/3.7.1/jquery.min.js}"></script>
+    <script th:src="@{/webjars/bootstrap/4.6.2/js/bootstrap.bundle.min.js}"></script>
+    <style>
+        body { margin: 0; overflow-x: hidden; }
+        .stock-layout { display: flex; min-height: calc(100vh - 250px); }
+        .stock-left-menu { width: 200px; min-width: 200px; background-color: #f8f9fa; border-right: 1px solid #dee2e6; padding: 0; }
+        .stock-left-menu .menu-title { background-color: #343a40; color: #fff; padding: 12px 15px; font-weight: bold; font-size: 15px; margin: 0; }
+        .stock-left-menu .list-group-item { border-radius: 0; border-left: none; border-right: none; padding: 10px 15px; font-size: 13px; cursor: pointer; }
+        .stock-left-menu .list-group-item:hover { background-color: #e9ecef; }
+        .stock-left-menu .list-group-item.active { background-color: #007bff; border-color: #007bff; color: #fff; }
+        .stock-left-menu .menu-section { font-size: 11px; color: #6c757d; padding: 8px 15px 4px; text-transform: uppercase; font-weight: bold; background-color: #f1f3f5; }
+        .stock-content { flex: 1; padding: 15px; overflow-x: auto; }
+    </style>
+</head>
+<body class="wrapper">
+
+<!-- 공통 탑 메뉴 (header.jsp 동일) -->
+<div class="jumbotron text-center">
+    <h1>강공 Homepage</h1>
+    <p>블로그 개발 한 번 해봅시다!!!</p>
+</div>
+<nav class="navbar navbar-expand-sm navbar-dark bg-dark">
+    <a href="#" class="navbar-brand">강공</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsibleNavbar">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="collapsibleNavbar">
+        <ul class="navbar-nav">
+            <li class="nav-item"><a href="#" th:onclick="'goPost(\'' + @{/board/list} + '\'); return false;'" class="nav-link">게시판</a></li>
+            <li class="nav-item"><a href="#" th:onclick="'goPost(\'' + @{/stock2/macro} + '\'); return false;'" class="nav-link">증권</a></li>
+            <li class="nav-item"><a href="#" th:onclick="'goPost(\'' + @{/calendar/list} + '\'); return false;'" class="nav-link">일정</a></li>
+            <li class="nav-item"><a href="#" th:onclick="'goPost(\'' + @{/user/list} + '\'); return false;'" class="nav-link">사용자등록</a></li>
+        </ul>
+        <ul class="nav navbar-nav ml-auto">
+            <li class="nav-item"><a href="#" th:onclick="'goPost(\'' + @{/security/customLogout} + '\'); return false;'" class="nav-link">로그아웃</a></li>
+        </ul>
+    </div>
+</nav>
+
+<div class="stock-layout">
+    <!-- 공통 레프트 메뉴 (stockLeftMenu.jsp 동일) -->
+    <div class="stock-left-menu">
+        <div class="menu-title">증권</div>
+        <div class="list-group list-group-flush">
+            <div class="menu-section">지표</div>
+            <a th:href="@{/marketcycle}" class="list-group-item list-group-item-action">증시 사계론</a>
+            <a href="#" th:onclick="'goPost(\'' + @{/stock2/macro} + '\'); return false;'"
+               class="list-group-item list-group-item-action">시장 매크로 지표</a>
+            <a href="#" th:onclick="'goPost(\'' + @{/stock2/esg} + '\'); return false;'"
+               class="list-group-item list-group-item-action">ESG 지표</a>
+            <a href="#" th:onclick="'goPost(\'' + @{/stockMobile/index/list} + '\'); return false;'"
+               class="list-group-item list-group-item-action">시장지표</a>
+            <div class="menu-section">포트폴리오</div>
+            <a href="#" th:onclick="'goPost(\'' + @{/stock2} + '\'); return false;'"
+               class="list-group-item list-group-item-action">포트폴리오 현황</a>
+            <a href="#" th:onclick="'goPost(\'' + @{/stock2/edit} + '\'); return false;'"
+               class="list-group-item list-group-item-action">포트폴리오 수정</a>
+            <a href="#" th:onclick="'goPost(\'' + @{/stock2/recommend} + '\'); return false;'"
+               class="list-group-item list-group-item-action">리밸런싱 추천</a>
+            <a href="#" th:onclick="'goPost(\'' + @{/stock2/value} + '\'); return false;'"
+               class="list-group-item list-group-item-action">가치주 스크리닝</a>
+            <div class="menu-section">데이터</div>
+            <a href="#" th:onclick="'goPost(\'' + @{/stock} + '\'); return false;'"
+               class="list-group-item list-group-item-action">데이터 관리</a>
+            <div class="menu-section">KRX 코스피</div>
+            <a href="#" th:onclick="'goPost(\'' + @{/advstock} + '\'); return false;'"
+               class="list-group-item list-group-item-action">코스피 다운로드</a>
+            <a href="#" th:onclick="'goPost(\'' + @{/advstock/yahoo} + '\'); return false;'"
+               class="list-group-item list-group-item-action">Yahoo Finance 다운로드</a>
+            <div class="menu-section">자산관리</div>
+            <a th:href="@{/retire}" class="list-group-item list-group-item-action active">노후자산 시뮬레이터</a>
+        </div>
+    </div>
+    <div class="stock-content">
+        <th:block th:replace="${content}"></th:block>
+    </div>
+</div>
+<script>
+function goPost(url) {
+    var f = document.createElement('form');
+    f.method = 'POST';
+    f.action = url;
+    document.body.appendChild(f);
+    f.submit();
+}
+</script>
+</body>
+</th:block>
+</html>

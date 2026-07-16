@@ -1,0 +1,509 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="seckim.stock">
+
+  
+
+    <update id="save" parameterType="com.kangong.stock.model.StockVO">
+        INSERT INTO ST_STOCK_MASTER
+	   		(ID, CREATE_DATE, UPDATE_DATE, DELETE_YN, STOCK_ID, NAME, PRICE, PRICE_BEFOREDAY, FACE_VALUE, MARKET_CAPITALIZATION, STOCK_QTY,
+	   		FOREIGNER_RATIO, VOLUMN, PER, ESTIMATION_PER, ROE, PBR, BPS, INDUSTRY_PER, INDUSTRY_BAISSE, INVESTMENT_OPINION,
+	   		TARGET_PRICE, MAX_52, MIN_52, DIVIDEND_RATE,NATIONAL,EPS,ESTIMATION_EPS, FUND_PAY)
+ 		VALUES
+   			( get_seq('ST_STOCK_MASTER'), NOW(), NOW(), 'N', #{stockId}, #{name}, #{price}, #{priceBeforeday}, #{faceValue}, #{marketCapitalization},
+   			  #{stockQty}, #{foreignerRatio}, #{volumn}, #{per}, #{estimationPer}, #{roe}, #{pbr}, #{bps}, #{industryPer}, #{industryBaisse},
+   			  #{investmentOpinion}, #{targetPrice}, #{max52}, #{min52}, #{dividendRate}, #{national}, #{eps}, #{estimationEps}, #{fundPay})
+		ON DUPLICATE KEY UPDATE
+			DELETE_YN = 'N', UPDATE_DATE = NOW(), STOCK_ID = #{stockId}, NAME = #{name}, PRICE = #{price}, PRICE_BEFOREDAY = #{priceBeforeday},
+			FACE_VALUE = #{faceValue}, MARKET_CAPITALIZATION = #{marketCapitalization}, STOCK_QTY = #{stockQty},
+			FOREIGNER_RATIO = #{foreignerRatio}, VOLUMN = #{volumn}, PER = #{per}, ESTIMATION_PER = #{estimationPer},
+			ROE = #{roe}, PBR = #{pbr}, BPS = #{bps}, INDUSTRY_PER = #{industryPer}, INDUSTRY_BAISSE = #{industryBaisse},
+			INVESTMENT_OPINION = #{investmentOpinion}, TARGET_PRICE = #{targetPrice},
+			MAX_52 = #{max52}, MIN_52 = #{min52}, DIVIDEND_RATE=#{dividendRate}, NATIONAL = #{national}, EPS = #{eps}, ESTIMATION_EPS = #{estimationEps}, FUND_PAY = #{fundPay}
+    </update>
+
+    <update id="saveBatch" parameterType="java.util.List">
+        INSERT INTO ST_STOCK_MASTER
+            (ID, CREATE_DATE, UPDATE_DATE, STOCK_ID, NAME, PRICE, PRICE_BEFOREDAY, FACE_VALUE, MARKET_CAPITALIZATION, STOCK_QTY,
+            FOREIGNER_RATIO, VOLUMN, PER, ESTIMATION_PER, ROE, PBR, BPS, INDUSTRY_PER, INDUSTRY_BAISSE, INVESTMENT_OPINION,
+            TARGET_PRICE, MAX_52, MIN_52, DIVIDEND_RATE, NATIONAL, EPS, ESTIMATION_EPS, FUND_PAY)
+        VALUES
+        <foreach collection="list" item="vo" separator=",">
+            ( get_seq('ST_STOCK_MASTER'), NOW(), NOW(), #{vo.stockId}, #{vo.name}, #{vo.price}, #{vo.priceBeforeday}, #{vo.faceValue}, #{vo.marketCapitalization},
+              #{vo.stockQty}, #{vo.foreignerRatio}, #{vo.volumn}, #{vo.per}, #{vo.estimationPer}, #{vo.roe}, #{vo.pbr}, #{vo.bps}, #{vo.industryPer}, #{vo.industryBaisse},
+              #{vo.investmentOpinion}, #{vo.targetPrice}, #{vo.max52}, #{vo.min52}, #{vo.dividendRate}, #{vo.national}, #{vo.eps}, #{vo.estimationEps}, #{vo.fundPay})
+        </foreach>
+        ON DUPLICATE KEY UPDATE
+            UPDATE_DATE = NOW(), NAME = VALUES(NAME), PRICE = VALUES(PRICE), PRICE_BEFOREDAY = VALUES(PRICE_BEFOREDAY),
+            FACE_VALUE = VALUES(FACE_VALUE), MARKET_CAPITALIZATION = VALUES(MARKET_CAPITALIZATION), STOCK_QTY = VALUES(STOCK_QTY),
+            FOREIGNER_RATIO = VALUES(FOREIGNER_RATIO), VOLUMN = VALUES(VOLUMN), PER = VALUES(PER), ESTIMATION_PER = VALUES(ESTIMATION_PER),
+            ROE = VALUES(ROE), PBR = VALUES(PBR), BPS = VALUES(BPS), INDUSTRY_PER = VALUES(INDUSTRY_PER), INDUSTRY_BAISSE = VALUES(INDUSTRY_BAISSE),
+            INVESTMENT_OPINION = VALUES(INVESTMENT_OPINION), TARGET_PRICE = VALUES(TARGET_PRICE),
+            MAX_52 = VALUES(MAX_52), MIN_52 = VALUES(MIN_52), DIVIDEND_RATE = VALUES(DIVIDEND_RATE), NATIONAL = VALUES(NATIONAL),
+            EPS = VALUES(EPS), ESTIMATION_EPS = VALUES(ESTIMATION_EPS), FUND_PAY = VALUES(FUND_PAY)
+    </update>
+
+    <update id="saveSimple" parameterType="com.kangong.stock.model.StockVO">
+        INSERT INTO ST_STOCK_MASTER
+	   		(ID, CREATE_DATE, UPDATE_DATE, DELETE_YN, STOCK_ID, NAME, PRICE, MARKET_CAPITALIZATION)
+ 		VALUES
+   			( get_seq('ST_STOCK_MASTER'), NOW(), NOW(), 'N', #{stockId}, #{name}, #{price}, #{marketCapitalization} )
+        ON DUPLICATE KEY UPDATE
+            UPDATE_DATE = NOW(), NAME = VALUES(NAME), PRICE = VALUES(PRICE), MARKET_CAPITALIZATION = VALUES(MARKET_CAPITALIZATION)
+    </update>
+
+    <!-- 관심종목 저장 시 master가 없을 때만 placeholder 생성. 기존 NAME/PRICE는 덮어쓰지 않고 삭제여부만 복구 -->
+    <update id="saveSimpleIfAbsent" parameterType="com.kangong.stock.model.StockVO">
+        INSERT INTO ST_STOCK_MASTER
+	   		(ID, CREATE_DATE, UPDATE_DATE, DELETE_YN, STOCK_ID, NAME, PRICE, MARKET_CAPITALIZATION)
+ 		VALUES
+   			( get_seq('ST_STOCK_MASTER'), NOW(), NOW(), 'N', #{stockId}, #{name}, #{price}, #{marketCapitalization} )
+        ON DUPLICATE KEY UPDATE
+            DELETE_YN = 'N'
+    </update>
+
+    <update id="saveSimpleBatch" parameterType="java.util.List">
+        INSERT INTO ST_STOCK_MASTER
+            (ID, CREATE_DATE, UPDATE_DATE, STOCK_ID, NAME, PRICE, MARKET_CAPITALIZATION)
+        VALUES
+        <foreach collection="list" item="vo" separator=",">
+            ( get_seq('ST_STOCK_MASTER'), NOW(), NOW(), #{vo.stockId}, #{vo.name}, #{vo.price}, #{vo.marketCapitalization} )
+        </foreach>
+        ON DUPLICATE KEY UPDATE
+            UPDATE_DATE = NOW(), STOCK_ID = VALUES(STOCK_ID), NAME = VALUES(NAME), PRICE = VALUES(PRICE), MARKET_CAPITALIZATION = VALUES(MARKET_CAPITALIZATION)
+    </update>
+    
+       <update id="saveFinancail" parameterType="com.kangong.stock.model.StockVO">
+       INSERT INTO ST_STOCK_FINANCIAL 
+   		(ID, CREATE_DATE, UPDATE_DATE, TOTAL_SALES, PROFITS, EARNINGS, PROFITS_RATIO, NET_PROFIT_RATIO, ROE, DEPT_RATIO, RESERVE_RATIO, 
+   		EPS, PER, BPS, PBR, DIVIDENDS_PER_SHARE, DIVIDENDS_RATE, DIVIDENDS_TENDENCY, YEAR, STOCK_ID, STOCK_MASTER_ID, SHARES_OUTSTANDING, 
+   		TOTAL_ASSETS, TOTAL_DEPT, TOTAL_CAPITAL, CAPITAL)  
+  	   VALUES ( get_seq('ST_STOCK_FINANCIAL'), NOW(), NOW(), #{totalSales}, #{profits}, #{earnings}, #{profitsRatio}, #{netProfitRatio}, 
+  	   #{roe}, #{deptRatio}, #{reserveRatio}, #{eps}, #{per}, #{bps}, #{pbr}, #{dividendsPerShare}, #{dividendsRate}, #{dividendsTendency}, 
+  	   #{year}, #{stockId}, #{stockMasterId}, #{sharesOutstanding}, #{totalAssets}, #{totalDept}, #{totalCapital}, #{capital})  
+	 ON DUPLICATE KEY UPDATE 
+		UPDATE_DATE = NOW(), TOTAL_SALES = #{totalSales}, PROFITS = #{profits}, EARNINGS = #{earnings}, PROFITS_RATIO = #{profitsRatio}, 
+		NET_PROFIT_RATIO = #{netProfitRatio}, ROE = #{roe}, DEPT_RATIO = #{deptRatio}, RESERVE_RATIO = #{reserveRatio}, EPS = #{eps}, 
+		PER = #{per}, BPS = #{bps}, PBR = #{pbr}, DIVIDENDS_PER_SHARE = #{dividendsPerShare}, DIVIDENDS_RATE = #{dividendsRate}, 
+		DIVIDENDS_TENDENCY = #{dividendsTendency}, YEAR = #{year}, STOCK_ID = #{stockId}, STOCK_MASTER_ID = #{stockMasterId}, 
+		SHARES_OUTSTANDING = #{sharesOutstanding}, TOTAL_ASSETS = #{totalAssets}, TOTAL_DEPT = #{totalDept}, 
+		TOTAL_CAPITAL = #{totalCapital}, CAPITAL = #{capital}
+    </update>
+    
+    <update id="saveFinancail2" parameterType="com.kangong.stock.model.StockVO">
+       INSERT INTO ST_STOCK_FINANCIAL
+   		(ID,UPDATE_DATE, YEAR, STOCK_ID, liquid_Asset,liquid_Dept,total_Stock_Qty,common_Stock_Qty,preferred_Stock_Qty)
+  	   VALUES ( get_seq('ST_STOCK_FINANCIAL'),  NOW(), #{year}, #{stockId}, #{liquidAsset},#{liquidDept},#{totalStockQty},#{commonStockQty},#{preferredStockQty})
+	 ON DUPLICATE KEY UPDATE
+		UPDATE_DATE = NOW(),liquid_Asset = #{liquidAsset}, liquid_Dept = #{liquidDept},total_Stock_Qty = #{totalStockQty},
+		common_Stock_Qty = #{commonStockQty}, preferred_Stock_Qty=#{preferredStockQty}
+    </update>
+
+    <!-- DB 준비: ALTER TABLE ST_STOCK_FINANCIAL ADD COLUMN OPERATING_CASH_FLOW VARCHAR(50) NULL; -->
+    <update id="saveCashFlow" parameterType="com.kangong.stock.model.StockFinancialVO">
+       INSERT INTO ST_STOCK_FINANCIAL
+            (ID, UPDATE_DATE, YEAR, STOCK_ID, OPERATING_CASH_FLOW)
+       VALUES (get_seq('ST_STOCK_FINANCIAL'), NOW(), #{year}, #{stockId}, #{operatingCashFlow})
+       ON DUPLICATE KEY UPDATE
+            UPDATE_DATE = NOW(), OPERATING_CASH_FLOW = #{operatingCashFlow}
+    </update>
+
+    <!-- DB 준비: ALTER TABLE ST_STOCK_MASTER ADD COLUMN VALUE_UP_YN CHAR(1) NULL DEFAULT NULL; -->
+    <update id="saveValueUp" parameterType="com.kangong.stock.model.StockVO">
+        UPDATE ST_STOCK_MASTER SET VALUE_UP_YN = #{valueUpYn} WHERE STOCK_ID = #{stockId}
+    </update>
+
+    <update id="resetValueUpYn">
+        UPDATE ST_STOCK_MASTER SET VALUE_UP_YN = 'N' WHERE DELETE_YN = 'N'
+    </update>
+
+    <select id="selectInterestStockIds" resultType="java.lang.String">
+        SELECT DISTINCT STOCK_ID FROM ST_STOCK_INTEREST
+    </select>
+
+    <select id="searchStockByName" parameterType="string" resultType="com.kangong.stock.model.StockVO">
+        SELECT STOCK_ID stockId, NAME name
+        FROM ST_STOCK_MASTER
+        WHERE DELETE_YN = 'N'
+          AND (NAME LIKE CONCAT('%', #{keyword}, '%')
+               OR STOCK_ID LIKE CONCAT('%', #{keyword}, '%'))
+        ORDER BY NAME
+        LIMIT 20
+    </select>
+
+    <select id="select" parameterType="com.kangong.stock.model.StockVO" resultType="com.kangong.stock.model.StockVO">
+        SELECT
+			ID id, CREATE_DATE createDate, UPDATE_DATE updateDate, DELETE_YN deleteYn, STOCK_ID stockId, NAME name, 
+			PRICE price, PRICE_BEFOREDAY priceBeforeday, FACE_VALUE faceValue, MARKET_CAPITALIZATION marketCapitalization, 
+			STOCK_QTY stockQty, FOREIGNER_RATIO foreignerRatio, VOLUMN volumn, PER per, ESTIMATION_PER estimationPer, ROE roe, 
+			PBR pbr, BPS bps, INDUSTRY_PER industryPer, INDUSTRY_BAISSE industryBaisse, INVESTMENT_OPINION investmentOpinion, 
+			TARGET_PRICE targetPrice, MAX_52 max52, MIN_52 min52, DIVIDEND_RATE dividendRate, NATIONAL national
+ 		FROM ST_STOCK_MASTER M
+		<where>
+			AND M.DELETE_YN = 'N'
+	        <if test="id != null and id !=''">
+	        	AND M.ID = #{id}
+	        </if>
+	        <if test="stockId != null and stockId !=''">
+	        	AND M.STOCK_ID = #{stockId}
+	        </if>
+		</where>
+    </select>
+    
+     <select id="selectFinancial" parameterType="com.kangong.stock.model.StockFinancialVO" resultType="com.kangong.stock.model.StockFinancialVO">
+        SELECT  
+			ID id, CREATE_DATE createDate, UPDATE_DATE updateDate, DELETE_YN deleteYn, TOTAL_SALES totalSales, PROFITS profits, 
+			EARNINGS earnings, PROFITS_RATIO profitsRatio, NET_PROFIT_RATIO netProfitRatio, ROE roe, DEPT_RATIO deptRatio, 
+			RESERVE_RATIO reserveRatio, EPS eps, PER per, BPS bps, PBR pbr, DIVIDENDS_PER_SHARE dividendsPerShare, 
+			DIVIDENDS_RATE dividendsRate, DIVIDENDS_TENDENCY dividendsTendency, YEAR year, STOCK_ID stockId, 
+			STOCK_MASTER_ID stockMasterId, SHARES_OUTSTANDING sharesOutstanding, TOTAL_ASSETS totalAssets, TOTAL_DEPT totalDept, 
+			TOTAL_CAPITAL totalCapital, CAPITAL capital
+ 		FROM ST_STOCK_FINANCIAL F
+		<where>
+			AND F.DELETE_YN = 'N'
+	        <if test="year != null and year !=''">
+	        	AND F.YEAR = #{year}
+	        </if>
+	        <if test="stockId != null and stockId !=''">
+	        	AND F.STOCK_ID = #{stockId}
+	        </if>
+		</where>
+    </select>
+
+    
+    <update id="saveStockCategory" parameterType="com.kangong.stock.model.StockCategoryVO">
+       INSERT INTO ST_STOCK_CATEGORY 
+   		(ID, CATEGORY_TYPE, CATEGORY_NO, CATEGORY_NAME)  
+     VALUES ( get_seq('ST_STOCK_CATEGORY'), #{categoryType}, #{categoryNo}, #{categoryName}) 
+	 ON DUPLICATE KEY UPDATE 
+		CATEGORY_TYPE = #{categoryType}, CATEGORY_NAME = #{categoryName}
+    </update>
+    
+    <update id="saveStockCategoryLink" parameterType="com.kangong.stock.model.StockCategoryVO">
+       INSERT INTO ST_STOCK_CATEGORY_LINK
+   		(ID, CATEGORY_NO, STOCK_ID)  
+       VALUES ( get_seq('ST_STOCK_CATEGORY_LINK'), #{categoryNo}, #{stockId}) 
+	 ON DUPLICATE KEY UPDATE 
+		CATEGORY_NO = #{categoryNo}, STOCK_ID = #{stockId} 
+    </update>
+    
+    <update id="saveStockDailyPrice" parameterType="com.kangong.stock.model.StockDailyPriceVO">
+       INSERT INTO ST_STOCK_DAILY_PRICE
+   		 (ID, STOCK_ID, TRADING_DATE, CLOSING_PRICE, PREVIOUS_DAY_RATE, FLUCTUATION_RATE, VOLUMN, ORGAN_TRADING_VOLUMN, FOREIGN_TRADING_VOLUMN, FOREIGN_HOLDING_VOLUMN, FOREIGN_HOLDING_RATE)
+	  VALUES
+		 ( get_seq('ST_STOCK_DAILY_PRICE'), #{stockId}, #{tradingDate}, #{closingPrice}, #{previousDayRate}, #{fluctuationRate}, #{volumn}, #{organTradingVolumn}, #{foreignTradingVolumn}, #{foreignHoldingVolumn}, #{foreignHoldingRate})
+	 ON DUPLICATE KEY UPDATE
+		CLOSING_PRICE = #{closingPrice}, PREVIOUS_DAY_RATE = #{previousDayRate}, FLUCTUATION_RATE = #{fluctuationRate}, VOLUMN = #{volumn}, ORGAN_TRADING_VOLUMN = #{organTradingVolumn}, FOREIGN_TRADING_VOLUMN = #{foreignTradingVolumn}, FOREIGN_HOLDING_VOLUMN = #{foreignHoldingVolumn}, FOREIGN_HOLDING_RATE = #{foreignHoldingRate}
+    </update>
+
+    <update id="saveStockDailyPriceBatch" parameterType="java.util.List">
+       INSERT INTO ST_STOCK_DAILY_PRICE
+            (ID, STOCK_ID, TRADING_DATE, CLOSING_PRICE, PREVIOUS_DAY_RATE, FLUCTUATION_RATE, VOLUMN, ORGAN_TRADING_VOLUMN, FOREIGN_TRADING_VOLUMN, FOREIGN_HOLDING_VOLUMN, FOREIGN_HOLDING_RATE)
+       VALUES
+       <foreach collection="list" item="vo" separator=",">
+            ( get_seq('ST_STOCK_DAILY_PRICE'), #{vo.stockId}, #{vo.tradingDate}, #{vo.closingPrice}, #{vo.previousDayRate}, #{vo.fluctuationRate}, #{vo.volumn}, #{vo.organTradingVolumn}, #{vo.foreignTradingVolumn}, #{vo.foreignHoldingVolumn}, #{vo.foreignHoldingRate})
+       </foreach>
+       ON DUPLICATE KEY UPDATE
+            CLOSING_PRICE = VALUES(CLOSING_PRICE), PREVIOUS_DAY_RATE = VALUES(PREVIOUS_DAY_RATE), FLUCTUATION_RATE = VALUES(FLUCTUATION_RATE), VOLUMN = VALUES(VOLUMN), ORGAN_TRADING_VOLUMN = VALUES(ORGAN_TRADING_VOLUMN), FOREIGN_TRADING_VOLUMN = VALUES(FOREIGN_TRADING_VOLUMN), FOREIGN_HOLDING_VOLUMN = VALUES(FOREIGN_HOLDING_VOLUMN), FOREIGN_HOLDING_RATE = VALUES(FOREIGN_HOLDING_RATE)
+    </update>
+    
+    <select id="selectStockEsgList" parameterType="com.kangong.stock.model.StockEsgVO" resultType="com.kangong.stock.model.StockEsgVO">
+        SELECT E.ID id, E.YEAR year, E.STOCK_ID stockId, M.NAME name,
+               E.GREEN_HOUSE_EMISSION greenHouseEmission, E.ENERGY_USAGE energyUsage,
+               E.FINE_DUST_USAGE fineDustUsage, E.WATER_RECYCLING_RATE waterRecyclingRate,
+               E.WASTE_RECYCLING_RATE wasteRecyclingRate, E.AVERAGE_ANNUAL_SALARY averageAnnualSalary,
+               E.NON_REGULAR_EMPLYMENT_RATE nonRegularEmplymentRate, E.DONATION donation,
+               E.CONTINUOUS_SERVICE_YEAR continuousServiceYear, E.OUTSIDE_DIRECTOR_RATE outsideDirectorRate,
+               E.LARGEST_SHARE_HOLDER_RATIO largestShareHolderRatio, E.DIRECTORATE_INDEPENDENCE directorateIndependence,
+               E.EXECUTIVE_AVERAGE_ANNUAL_SALARY executiveAverageAnnualSalary, E.SALARY_RATIO salaryRatio,
+               E.UPDATE_DATE updateDate
+          FROM ST_STOCK_ESG E
+          LEFT JOIN ST_STOCK_MASTER M ON E.STOCK_ID = M.STOCK_ID
+         WHERE 1=1
+        <if test="stockId != null and stockId != ''">
+           AND (E.STOCK_ID = #{stockId} OR M.NAME LIKE CONCAT('%', #{stockId}, '%'))
+        </if>
+        <if test="year != null and year != ''">
+           AND E.YEAR = #{year}
+        </if>
+         ORDER BY E.STOCK_ID, E.YEAR DESC
+    </select>
+
+    <update id="saveStockEsg" parameterType="com.kangong.stock.model.StockEsgVO">
+       INSERT INTO ST_STOCK_ESG (ID, CREATE_DATE, UPDATE_DATE, YEAR, STOCK_ID, GREEN_HOUSE_EMISSION, ENERGY_USAGE, FINE_DUST_USAGE, WATER_RECYCLING_RATE, WASTE_RECYCLING_RATE, AVERAGE_ANNUAL_SALARY, NON_REGULAR_EMPLYMENT_RATE, DONATION, CONTINUOUS_SERVICE_YEAR, OUTSIDE_DIRECTOR_RATE, LARGEST_SHARE_HOLDER_RATIO, DIRECTORATE_INDEPENDENCE, EXECUTIVE_AVERAGE_ANNUAL_SALARY, SALARY_RATIO)   
+		VALUES ( get_seq('ST_STOCK_ESG'), NOW(), NOW(), #{year}, #{stockId}, #{greenHouseEmission}, #{energyUsage}, #{fineDustUsage}, #{waterRecyclingRate}, #{wasteRecyclingRate}, #{averageAnnualSalary}, #{nonRegularEmplymentRate}, #{donation}, #{continuousServiceYear}, #{outsideDirectorRate}, #{largestShareHolderRatio}, #{directorateIndependence}, #{executiveAverageAnnualSalary}, #{salaryRatio})  
+		ON DUPLICATE KEY UPDATE 
+			UPDATE_DATE = NOW(), YEAR = #{year}, STOCK_ID = #{stockId}, GREEN_HOUSE_EMISSION = #{greenHouseEmission}, ENERGY_USAGE = #{energyUsage}, FINE_DUST_USAGE = #{fineDustUsage}, WATER_RECYCLING_RATE = #{waterRecyclingRate}, WASTE_RECYCLING_RATE = #{wasteRecyclingRate}, AVERAGE_ANNUAL_SALARY = #{averageAnnualSalary}, NON_REGULAR_EMPLYMENT_RATE = #{nonRegularEmplymentRate}, DONATION = #{donation}, CONTINUOUS_SERVICE_YEAR = #{continuousServiceYear}, OUTSIDE_DIRECTOR_RATE = #{outsideDirectorRate}, LARGEST_SHARE_HOLDER_RATIO = #{largestShareHolderRatio}, DIRECTORATE_INDEPENDENCE = #{directorateIndependence}, EXECUTIVE_AVERAGE_ANNUAL_SALARY = #{executiveAverageAnnualSalary}, SALARY_RATIO = #{salaryRatio}   
+    </update>
+    
+    <update id="saveStockMarketIndex" parameterType="com.kangong.stock.model.StockMarketIndexVO">
+       INSERT INTO ST_STOCK_MARKET_INDEX 
+			(ID, CREATE_DATE, UPDATE_DATE, YYYYMMDD, DOMESTIC_INTEREST_CALL, DOMESTIC_INTEREST_CD, DOMESTIC_INTEREST_COFIX_MANF, DOMESTIC_INTEREST_COFIX_OUTB, DOMESTIC_INTEREST_NCOFIX_OUTB, STANDARD_INTEREST_US, STANDARD_INTEREST_KR, STANDARD_INTEREST_EU, STANDARD_INTEREST_GB, STANDARD_INTEREST_JP, METAL_GC, METAL_CMDT, METAL_SI, METAL_HG, METAL_PL, TRANSPORT_CCF, TRANSPORT_SCF, TRANSPORT_BADI, TRANSPORT_BACK, TRANSPORT_BPNI, TRANSPORT_BSIS, TRANSPORT_BHSI, TRANSPORT_BAID, TRANSPORT_BAIT, BOND_US10YT, BOND_KR10YT, BOND_JP10YT, BOND_DE10YT, BOND_CN10YT, ENERGY_CL, ENERGY_LCO, ENERGY_RB, ENERGY_HO, ENERGY_DCB)  
+		VALUES 
+		    (get_seq('ST_STOCK_MARKET_INDEX'), NOW(), NOW(), #{yyyymmdd}, #{domesticInterestCall}, #{domesticInterestCd}, #{domesticInterestCofixManf}, #{domesticInterestCofixOutb}, #{domesticInterestNcofixOutb}, #{standardInterestUs}, #{standardInterestKr}, #{standardInterestEu}, #{standardInterestGb}, #{standardInterestJp}, #{metalGc}, #{metalCmdt}, #{metalSi}, #{metalHg}, #{metalPl}, #{transportCcf}, #{transportScf}, #{transportBadi}, #{transportBack}, #{transportBpni}, #{transportBsis}, #{transportBhsi}, #{transportBaid}, #{transportBait}, #{bondUs10yt}, #{bondKr10yt}, #{bondJp10yt}, #{bondDe10yt}, #{bondCn10yt}, #{energyCl}, #{energyLco}, #{energyRb}, #{energyHo}, #{energyDcb}) 
+		ON DUPLICATE KEY UPDATE 
+			UPDATE_DATE = NOW(), YYYYMMDD = #{yyyymmdd}, DOMESTIC_INTEREST_CALL = #{domesticInterestCall}, DOMESTIC_INTEREST_CD = #{domesticInterestCd}, DOMESTIC_INTEREST_COFIX_MANF = #{domesticInterestCofixManf}, DOMESTIC_INTEREST_COFIX_OUTB = #{domesticInterestCofixOutb}, DOMESTIC_INTEREST_NCOFIX_OUTB = #{domesticInterestNcofixOutb}, STANDARD_INTEREST_US = #{standardInterestUs}, STANDARD_INTEREST_KR = #{standardInterestKr}, STANDARD_INTEREST_EU = #{standardInterestEu}, STANDARD_INTEREST_GB = #{standardInterestGb}, STANDARD_INTEREST_JP = #{standardInterestJp}, METAL_GC = #{metalGc}, METAL_CMDT = #{metalCmdt}, METAL_SI = #{metalSi}, METAL_HG = #{metalHg}, METAL_PL = #{metalPl}, TRANSPORT_CCF = #{transportCcf}, TRANSPORT_SCF = #{transportScf}, TRANSPORT_BADI = #{transportBadi}, TRANSPORT_BACK = #{transportBack}, TRANSPORT_BPNI = #{transportBpni}, TRANSPORT_BSIS = #{transportBsis}, TRANSPORT_BHSI = #{transportBhsi}, TRANSPORT_BAID = #{transportBaid}, TRANSPORT_BAIT = #{transportBait}, BOND_US10YT = #{bondUs10yt}, BOND_KR10YT = #{bondKr10yt}, BOND_JP10YT = #{bondJp10yt}, BOND_DE10YT = #{bondDe10yt}, BOND_CN10YT = #{bondCn10yt}, ENERGY_CL = #{energyCl}, ENERGY_LCO = #{energyLco}, ENERGY_RB = #{energyRb}, ENERGY_HO = #{energyHo}, ENERGY_DCB = #{energyDcb} 
+    </update>
+
+    <select id="selectStockInterest" parameterType="com.kangong.stock.model.StockInterestVO" resultType="com.kangong.stock.model.StockInterestVO">
+        SELECT I.STOCK_DIVISION stockDivision
+             , IFNULL(I.STOCK_TYPE, '주식') stockType
+             , IFNULL(M.NAME, I.STOCK_ID) name
+             , I.STOCK_ID stockId
+             , I.STOCK_QTY qty
+             , IFNULL(M.PRICE, 0) * I.STOCK_QTY totalPrice
+             , ROUND(P.STANDARD_PRICE * I.STOCK_POTION) standard
+             , ROUND(P.STANDARD_PRICE * I.STOCK_POTION) - IFNULL(M.PRICE, 0) * I.STOCK_QTY addPrice
+             , I.STOCK_POTION stockPotion
+             , IFNULL(M.PRICE, 0) price
+             , IFNULL(M.MAX_52, 0) max52
+             , IFNULL(M.MIN_52, 0) min52
+             , CASE WHEN IFNULL(M.MAX_52, 0) > 0 THEN ROUND((CAST(M.MAX_52 AS SIGNED) - CAST(IFNULL(M.PRICE, 0) AS SIGNED)) * 100.0 / M.MAX_52, 2) ELSE NULL END rate52
+             , CASE WHEN IFNULL(M.MAX_52, 0) > IFNULL(M.MIN_52, 0)
+                    THEN LEAST(100, GREATEST(0, ROUND((IFNULL(M.PRICE,0) - IFNULL(M.MIN_52,0)) * 100.0 / (IFNULL(M.MAX_52,0) - IFNULL(M.MIN_52,0)), 1)))
+                    ELSE NULL END pos52
+             , CASE WHEN SUM(IFNULL(M.PRICE, 0) * I.STOCK_QTY) OVER (PARTITION BY I.STOCK_DIVISION) > 0
+                    THEN ROUND(IFNULL(M.PRICE, 0) * I.STOCK_QTY * 100.0 / SUM(IFNULL(M.PRICE, 0) * I.STOCK_QTY) OVER (PARTITION BY I.STOCK_DIVISION), 2)
+                    ELSE 0 END actualPotion
+             , RANK() OVER(PARTITION BY I.STOCK_DIVISION ORDER BY (ROUND(P.STANDARD_PRICE * I.STOCK_POTION) - IFNULL(M.PRICE, 0) * I.STOCK_QTY) DESC) rk
+             , NULL month1Rate
+             , NULL month3Rate
+             , NULL month6Rate
+             , NULL month12Rate
+        FROM ST_STOCK_INTEREST I
+        INNER JOIN ST_STOCK_INTEREST_PARAM P ON P.STOCK_DIVISION = I.STOCK_DIVISION
+        LEFT JOIN ST_STOCK_MASTER M ON M.STOCK_ID = I.STOCK_ID
+        <where>
+          <if test="stockDivision != null and stockDivision != ''">
+          AND I.STOCK_DIVISION = #{stockDivision}
+          </if>
+        </where>
+        ORDER BY P.ORDER_NUM, I.STOCK_DIVISION, (ROUND(P.STANDARD_PRICE * I.STOCK_POTION) - IFNULL(M.PRICE, 0) * I.STOCK_QTY) DESC
+    </select>
+
+    <select id="selectPeriodPrices" resultType="map">
+        SELECT D.STOCK_ID stockId, D.TRADING_DATE tradingDate, D.CLOSING_PRICE closingPrice
+        FROM ST_STOCK_DAILY_PRICE D
+        WHERE D.STOCK_ID IN
+            <foreach item="id" collection="stockIds" open="(" separator="," close=")">#{id}</foreach>
+        AND D.TRADING_DATE >= DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 13 MONTH), '%Y-%m-%d')
+        ORDER BY D.STOCK_ID, D.TRADING_DATE
+    </select>
+
+    <select id="selectStockDivisions" resultType="com.kangong.stock.model.StockInterestParamVO">
+        SELECT STOCK_DIVISION stockDivision, STANDARD_PRICE standardPrice, ORDER_NUM orderNum
+        FROM ST_STOCK_INTEREST_PARAM
+        ORDER BY ORDER_NUM
+    </select>
+
+    <select id="selectStockInterestRaw" parameterType="com.kangong.stock.model.StockInterestVO" resultType="com.kangong.stock.model.StockInterestVO">
+        SELECT I.STOCK_ID stockId
+             , I.STOCK_DIVISION stockDivision
+             , I.STOCK_QTY qty
+             , I.STOCK_POTION stockPotion
+             , IFNULL(M.NAME, I.STOCK_ID) name
+             , IFNULL(M.PRICE, 0) * I.STOCK_QTY totalPrice
+        FROM ST_STOCK_INTEREST I
+        LEFT JOIN ST_STOCK_MASTER M ON M.STOCK_ID = I.STOCK_ID
+        <where>
+            <if test="stockDivision != null and stockDivision != ''">
+            AND I.STOCK_DIVISION = #{stockDivision}
+            </if>
+        </where>
+        ORDER BY I.STOCK_DIVISION, I.STOCK_POTION DESC
+    </select>
+
+    <update id="saveStockInterest" parameterType="com.kangong.stock.model.StockInterestVO">
+        INSERT INTO ST_STOCK_INTEREST (STOCK_ID, STOCK_DIVISION, STOCK_QTY, STOCK_POTION)
+        VALUES (#{stockId}, #{stockDivision}, #{qty}, #{stockPotion})
+        ON DUPLICATE KEY UPDATE
+            STOCK_QTY = #{qty}, STOCK_POTION = #{stockPotion}
+    </update>
+
+    <delete id="deleteStockInterest" parameterType="com.kangong.stock.model.StockInterestVO">
+        DELETE FROM ST_STOCK_INTEREST
+        WHERE STOCK_ID = #{stockId} AND STOCK_DIVISION = #{stockDivision}
+    </delete>
+
+    <update id="saveStockInterestParam" parameterType="com.kangong.stock.model.StockInterestParamVO">
+        INSERT INTO ST_STOCK_INTEREST_PARAM (STOCK_DIVISION, STANDARD_PRICE, ORDER_NUM)
+        VALUES (#{stockDivision}, #{standardPrice}, #{orderNum})
+        ON DUPLICATE KEY UPDATE
+            STANDARD_PRICE = #{standardPrice}, ORDER_NUM = #{orderNum}
+    </update>
+
+    <delete id="deleteStockInterestParam" parameterType="com.kangong.stock.model.StockInterestParamVO">
+        DELETE FROM ST_STOCK_INTEREST_PARAM WHERE STOCK_DIVISION = #{stockDivision}
+    </delete>
+
+    <!-- ==================== 가치주 보조 업데이트 ==================== -->
+
+    <update id="updateIndustryPer" parameterType="com.kangong.stock.model.StockVO">
+        UPDATE ST_STOCK_MASTER
+        SET INDUSTRY_PER = #{industryPer}, UPDATE_DATE = NOW()
+        WHERE STOCK_ID = #{stockId}
+    </update>
+
+    <update id="updateRoeFromFinancial">
+        UPDATE ST_STOCK_MASTER M
+        INNER JOIN (
+            SELECT F.STOCK_ID, F.ROE
+            FROM ST_STOCK_FINANCIAL F
+            INNER JOIN (
+                SELECT STOCK_ID, MAX(YEAR) maxYear
+                FROM ST_STOCK_FINANCIAL WHERE DELETE_YN = 'N'
+                GROUP BY STOCK_ID
+            ) lat ON F.STOCK_ID = lat.STOCK_ID AND F.YEAR = lat.maxYear
+            WHERE F.DELETE_YN = 'N' AND TRIM(F.ROE) REGEXP '^-?[0-9]+\.?[0-9]*$' AND CAST(TRIM(F.ROE) AS DECIMAL(10,2)) != 0
+        ) FIN ON M.STOCK_ID = FIN.STOCK_ID
+        SET M.ROE = FIN.ROE
+    </update>
+
+    <update id="updateDividendsTendency">
+        UPDATE ST_STOCK_FINANCIAL
+        SET DIVIDENDS_TENDENCY = ROUND(
+                CAST(TRIM(DIVIDENDS_PER_SHARE) AS DECIMAL(20,2))
+              / CAST(TRIM(EPS) AS DECIMAL(20,2)) * 100, 2)
+        WHERE DELETE_YN = 'N'
+          AND (DIVIDENDS_TENDENCY IS NULL OR DIVIDENDS_TENDENCY = 0)
+          AND TRIM(DIVIDENDS_PER_SHARE) REGEXP '^-?[0-9]+\.?[0-9]*$'
+          AND CAST(TRIM(DIVIDENDS_PER_SHARE) AS DECIMAL(20,2)) != 0
+          AND TRIM(EPS) REGEXP '^-?[0-9]+\.?[0-9]*$'
+          AND CAST(TRIM(EPS) AS DECIMAL(20,2)) != 0
+    </update>
+
+    <!-- ==================== 가치주 스크리닝 ==================== -->
+
+    <select id="selectValueScreen" parameterType="com.kangong.stock.model.StockValueScreenVO"
+            resultType="com.kangong.stock.model.StockValueScreenVO">
+        SELECT R.* FROM (
+            SELECT
+                T.stockId, T.name, T.price, T.marketCapitalization, T.industryPer,
+                T.currentPer, T.currentPbr, T.currentRoe, T.currentDividendRate,
+                T.currentDebtRatio, T.dividendTendency,
+                T.avgPer3y, T.avgRoe3y, T.roePassYears,
+                T.divPayYears, T.divConsecutive, T.profitConsecutive,
+                T.currentRatio, T.operatingCashFlow,
+                T.valueUpYn,
+                T.industryPerRatio,
+                T.max52, T.min52, T.sectorName,
+                (
+                    CASE WHEN T.currentPer > 0 AND T.currentPer &lt;= #{filterPerMax} THEN 1 ELSE 0 END
+                  + CASE WHEN T.currentPbr > 0 AND T.currentPbr &lt;= #{filterPbrMax} THEN 1 ELSE 0 END
+                  + CASE WHEN T.avgRoe3y >= #{filterRoeMin} AND T.roePassYears >= 3 THEN 1 ELSE 0 END
+                  + CASE WHEN T.currentDividendRate >= #{filterDividendMin}
+                           OR T.dividendTendency >= 25 THEN 1 ELSE 0 END
+                  + CASE WHEN T.currentDebtRatio >= 0 AND T.currentDebtRatio &lt;= #{filterDebtMax} THEN 1 ELSE 0 END
+                  + CASE WHEN T.divConsecutive >= 3 THEN 1 ELSE 0 END
+                  + CASE WHEN T.profitConsecutive >= 3 THEN 1 ELSE 0 END
+                  + CASE WHEN T.currentRatio >= 100 THEN 1 ELSE 0 END
+                  + CASE WHEN T.operatingCashFlow > 0 THEN 1 ELSE 0 END
+                  + CASE WHEN T.valueUpYn = 'Y' THEN 1 ELSE 0 END
+                ) AS passCount,
+                10 AS totalCriteria
+            FROM (
+                SELECT
+                    M.STOCK_ID stockId,
+                    M.NAME name,
+                    M.PRICE price,
+                    M.MARKET_CAPITALIZATION marketCapitalization,
+                    M.INDUSTRY_PER industryPer,
+                    CAST(NULLIF(M.PER, '') AS DECIMAL(10,2)) currentPer,
+                    CAST(NULLIF(M.PBR, '') AS DECIMAL(10,2)) currentPbr,
+                    CAST(NULLIF(M.ROE, '') AS DECIMAL(10,2)) currentRoe,
+                    CAST(NULLIF(M.DIVIDEND_RATE, '') AS DECIMAL(10,2)) currentDividendRate,
+                    IFNULL(FL.latestDebtRatio, -1) currentDebtRatio,
+                    IFNULL(FL.latestDivTendency, 0) dividendTendency,
+                    FA.avgPer3y,
+                    FA.avgRoe3y,
+                    IFNULL(FA.roePassYears, 0) roePassYears,
+                    IFNULL(FD.divPayYears, 0) divPayYears,
+                    IFNULL(FD.divConsecutive, 0) divConsecutive,
+                    IFNULL(FD.profitConsecutive, 0) profitConsecutive,
+                    IFNULL(FL.currentRatio, -1) currentRatio,
+                    IFNULL(FL.operatingCashFlow, 0) operatingCashFlow,
+                    IFNULL(M.VALUE_UP_YN, 'N') valueUpYn,
+                    CASE WHEN CAST(NULLIF(M.INDUSTRY_PER, '') AS DECIMAL(10,2)) > 0
+                         THEN ROUND(CAST(NULLIF(M.PER, '') AS DECIMAL(10,2))
+                                  / CAST(NULLIF(M.INDUSTRY_PER, '') AS DECIMAL(10,2)) * 100, 1)
+                         ELSE NULL END industryPerRatio,
+                    M.MAX_52 max52,
+                    M.MIN_52 min52,
+                    (SELECT C.CATEGORY_NAME FROM ST_STOCK_CATEGORY_LINK CL
+                       JOIN ST_STOCK_CATEGORY C ON C.CATEGORY_NO = CL.CATEGORY_NO
+                                               AND C.CATEGORY_TYPE = 'industry'
+                      WHERE CL.STOCK_ID = M.STOCK_ID LIMIT 1) sectorName
+                FROM ST_STOCK_MASTER M
+                LEFT JOIN (
+                    SELECT F.STOCK_ID,
+                           CAST(NULLIF(F.DEPT_RATIO, '') AS DECIMAL(10,2)) latestDebtRatio,
+                           CASE
+                               WHEN F.DIVIDENDS_TENDENCY IS NOT NULL AND F.DIVIDENDS_TENDENCY > 0
+                                   THEN CAST(F.DIVIDENDS_TENDENCY AS DECIMAL(10,2))
+                               WHEN F.DIVIDENDS_PER_SHARE > 0 AND F.EPS > 0
+                                   THEN ROUND(F.DIVIDENDS_PER_SHARE / F.EPS * 100, 2)
+                               ELSE 0
+                           END latestDivTendency,
+                           CASE WHEN CAST(NULLIF(F.LIQUID_ASSET, '') AS DECIMAL(20,2)) > 0
+                                     AND CAST(NULLIF(F.LIQUID_DEPT, '') AS DECIMAL(20,2)) > 0
+                                THEN ROUND(CAST(NULLIF(F.LIQUID_ASSET, '') AS DECIMAL(20,2))
+                                          / CAST(NULLIF(F.LIQUID_DEPT, '') AS DECIMAL(20,2)) * 100, 1)
+                                ELSE -1 END currentRatio,
+                           IFNULL(CAST(NULLIF(F.OPERATING_CASH_FLOW, '') AS DECIMAL(20,2)), 0) operatingCashFlow
+                    FROM ST_STOCK_FINANCIAL F
+                    INNER JOIN (
+                        SELECT STOCK_ID, MAX(YEAR) maxYear
+                        FROM ST_STOCK_FINANCIAL
+                        WHERE DELETE_YN = 'N' AND YEAR &lt; YEAR(CURDATE())
+                        GROUP BY STOCK_ID
+                    ) lat ON F.STOCK_ID = lat.STOCK_ID AND F.YEAR = lat.maxYear
+                    WHERE F.DELETE_YN = 'N'
+                ) FL ON FL.STOCK_ID = M.STOCK_ID
+                LEFT JOIN (
+                    SELECT
+                        ranked.STOCK_ID,
+                        ROUND(AVG(ranked.perVal), 2) avgPer3y,
+                        ROUND(AVG(ranked.roeVal), 2) avgRoe3y,
+                        SUM(CASE WHEN ranked.roeVal >= #{filterRoeMin} THEN 1 ELSE 0 END) roePassYears
+                    FROM (
+                        SELECT F2.STOCK_ID, F2.YEAR,
+                               CAST(NULLIF(F2.PER, '') AS DECIMAL(10,2)) perVal,
+                               CAST(NULLIF(F2.ROE, '') AS DECIMAL(10,2)) roeVal,
+                               ROW_NUMBER() OVER (PARTITION BY F2.STOCK_ID ORDER BY F2.YEAR DESC) rn
+                        FROM ST_STOCK_FINANCIAL F2
+                        WHERE F2.DELETE_YN = 'N' AND F2.YEAR &lt; YEAR(CURDATE())
+                    ) ranked
+                    WHERE ranked.rn &lt;= 3
+                    GROUP BY ranked.STOCK_ID
+                ) FA ON FA.STOCK_ID = M.STOCK_ID
+                LEFT JOIN (
+                    SELECT
+                        r5.STOCK_ID,
+                        SUM(CASE WHEN r5.dps > 0 THEN 1 ELSE 0 END) divPayYears,
+                        LEAST(MIN(CASE WHEN r5.dps &lt;= 0 THEN r5.rn ELSE 6 END) - 1, 5) divConsecutive,
+                        LEAST(MIN(CASE WHEN r5.profit &lt;= 0 THEN r5.rn ELSE 6 END) - 1, 5) profitConsecutive
+                    FROM (
+                        SELECT F3.STOCK_ID,
+                               IFNULL(F3.DIVIDENDS_PER_SHARE, 0) dps,
+                               IFNULL(CAST(NULLIF(F3.PROFITS, '') AS DECIMAL(20,2)), 0) profit,
+                               ROW_NUMBER() OVER (PARTITION BY F3.STOCK_ID ORDER BY F3.YEAR DESC) rn
+                        FROM ST_STOCK_FINANCIAL F3
+                        WHERE F3.DELETE_YN = 'N' AND F3.YEAR &lt; YEAR(CURDATE())
+                    ) r5
+                    WHERE r5.rn &lt;= 5
+                    GROUP BY r5.STOCK_ID
+                ) FD ON FD.STOCK_ID = M.STOCK_ID
+                WHERE M.DELETE_YN = 'N'
+                  AND M.PER IS NOT NULL AND M.PER != '' AND M.PER != '0'
+                  AND M.PBR IS NOT NULL AND M.PBR != '' AND M.PBR != '0'
+            ) T
+        ) R
+        WHERE R.passCount >= #{filterPassCountMin}
+        <if test="filterMarketCapMin != null and filterMarketCapMin > 0">
+            AND CAST(R.marketCapitalization AS UNSIGNED) >= #{filterMarketCapMin}
+        </if>
+        ORDER BY R.passCount DESC, R.currentPer ASC
+    </select>
+
+</mapper>
