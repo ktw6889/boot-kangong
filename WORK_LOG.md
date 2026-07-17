@@ -19,6 +19,14 @@
 - 원격 `https://github.com/ktw6889/boot-kangong.git` 확인 → 예전 구버전 init 커밋 1개만 존재 → 사용자 확인 후 force push로 `main` 브랜치에 최신 소스 반영 완료
 - 예전 `master`는 GitHub 기본 브랜치라 삭제 거부됨 → 위 "다음 할 일" 참고
 
+### Git 반영 2차 점검 — 개인정보 잔존 제거 + 로그인 정상 동작 확인 (2026-07-17)
+- 재점검 중 발견: `SQL/backup.sql`에 실사용자 개인정보(이름/이메일/생년월일/평문비밀번호 등)가 통째로 커밋되어 있어 git 추적 제거 + `.gitignore` 추가 (로컬 파일은 유지), 커밋 amend 후 force push로 히스토리에서 완전히 제거
+- `application.properties`에 죽은 주석 블록으로 남아있던 실제 DB 비밀번호(`1234`) 삭제
+- 소스 하드코딩된 실제 개인정보 더미로 교체: `customLogin.jsp`/`MenuUrlTests.java`의 실제 이메일(`orktw@naver.com`) → `admin@kangong.local`, `userView.jsp`/`commonInputEdit.jsp`의 실제 이름·회원정보 → 가상 샘플 데이터
+- DB(SECKIMDB)에 `admin@kangong.local`/`1234` 계정 신규 생성(ST_USER_INFO, ST_USER_AUTHORITIES: ROLE_ADMIN/ROLE_MEMBER) — 소스에서 개인정보 제거해도 로그인 정상 동작하도록 실제 로그인 정보 대체
+- 별도 이슈 발견 및 수정: `application-secret.properties`에 오타(`4spring.datasource...`)로 DB 계정 인식 실패 → 수정. `application.properties` datasource URL에 `allowPublicKeyRetrieval=true` 추가(MySQL8 caching_sha2_password 공개키 조회 오류 해결)
+- `mvn spring-boot:run` + curl로 `admin@kangong.local` 로그인 → `/stock` 200 OK 확인, 세션 쿠키로 인증 필요 페이지 정상 접근 검증 완료
+
 ### QQQM 유령 행 삭제 (2026-07-12)
 - ST_STOCK_INTEREST에서 STOCK_DIVISION이 깨진 문자(과거 인코딩 오류로 U+FFFD 포함)로 저장된 QQQM 중복 행 1건을 DB에서 직접 삭제
 - 조건: `STOCK_DIVISION NOT IN (SELECT STOCK_DIVISION FROM ST_STOCK_INTEREST_PARAM)` — 전체 테이블에 해당 1건만 존재, 삭제 후 QQQM 정상 행 1건만 남음 확인
